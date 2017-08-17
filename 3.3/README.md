@@ -198,4 +198,4 @@ services:
 
 License
 ----
-Apache
+MIT
