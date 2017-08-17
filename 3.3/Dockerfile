@@ -11,7 +11,7 @@ RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" \
  && tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin
 
 #Add S6 Overlay (Build via Docker CE 17)
-#ADD https://github.com/just-containers/s6-overlay/releases/download/v$S6_RELEASE /tmp/
+#ADD https://github.com/just-containers/s6-overlay/releases/download/$S6_RELEASE /tmp/
 #RUN mv /tmp/bin/* /usr/bin/ \
 # && mv /tmp/etc/* /etc/ \
 # && mv /tmp/init / \
