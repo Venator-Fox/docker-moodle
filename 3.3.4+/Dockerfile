@@ -8,8 +8,6 @@ ENV S6_RELEASE 1.21.4.0
 #Add S6 Overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v$S6_RELEASE/s6-overlay-amd64.tar.gz /tmp/
 RUN tar xvfz /tmp/s6-overlay-amd64.tar.gz -C /
-#RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" \
-# && tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin
 
 #Install Moodle Required Packages
 RUN apt-get update \
