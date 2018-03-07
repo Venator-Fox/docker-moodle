@@ -3,22 +3,11 @@ MAINTAINER Adam Zheng adam.w.zheng@icloud.com
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV MOODLE_RELEASE MOODLE_33_STABLE
-ENV S6_RELEASE 1.19.1.1
+ENV S6_RELEASE 1.21.4.0
 
-#Add S6 Overlay (Build via Docker 1.12)
+#Add S6 Overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v$S6_RELEASE/s6-overlay-amd64.tar.gz /tmp/
-RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" \
- && tar xzf /tmp/s6-overlay-amd64.tar.gz -C /usr ./bin
-
-#Add S6 Overlay (Build via Docker CE 17)
-#ADD https://github.com/just-containers/s6-overlay/releases/download/v$S6_RELEASE/s6-overlay-amd64.tar.gz /tmp/
-#RUN mv /tmp/bin/* /usr/bin/ \
-# && mv /tmp/etc/* /etc/ \
-# && mv /tmp/init / \
-# && mv /tmp/libexec/ / \
-# && rm -v /tmp/usr/bin/execlineb \
-# && mv /tmp/usr/bin/* /usr/bin/ \
-# && rm -rfv /tmp/*
+RUN tar xvfz /tmp/s6-overlay-amd64.tar.gz -C /
 
 #Install Moodle Required Packages
 RUN apt-get update \
