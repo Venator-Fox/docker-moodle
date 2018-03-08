@@ -6,12 +6,13 @@
 
 ### How to use this image
 
-Example: To startup an unconfigured local install with default values, no ssl:
-
+Example: To startup an unconfigured local install with default values, no ssl:  
 Start a `postgres` server instance from the official postgres repository
 
+| If `mysql` is desired, please see example at the end of this Readme
+
 ```console
-$ docker run --name moodle-postgres -e POSTGRES_PASSWORD=moodle -e POSTGRES_USER=moodle -e POSTGRES_DB=moodle -d postgres:latest
+$ docker run --name moodle-postgres -e POSTGRES_USER=moodle -e POSTGRES_PASSWORD=moodle -e POSTGRES_DB=moodle -d postgres:latest
 ```
 
 Then start a `venatorfox/moodle` instance and link the postgres instance, expose port 80.
@@ -49,11 +50,12 @@ It is recommended to set them properly and not use default values.
 | MOODLECFG_SSLPROXY | false | Set to true if an SSL proxy container is put infront of the Moodle install, such as HAProxy with SSL termination. An example will be presented in the below docker compose files. | TRUE |
 | MOODLE_LANG | en | ------ | FALSE |
 | MOODLE_WWWROOT | http://localhost | Be sure to update to https:// if an SSL proxy is used. | TRUE |
-| MOODLE_DBHOST | moodle-postgres | ------ | FALSE |
+| MOODLE_DBTYPE | pgsql | Change to `mysqli` if using MySQL | FALSE |
+| MOODLE_DBHOST | moodle-postgres | Change to something like `moodle-mysql` if using MySQL | FALSE |
 | MOODLE_DBNAME | moodle | ------ | FALSE |
 | MOODLE_DBUSER | moodle | ------ | FALSE |
 | MOODLE_DBPASS | moodle | ------ | FALSE |
-| MOODLE_DBPORT | 5432 | ------ | FALSE |
+| MOODLE_DBPORT | 5432 | Change to `3306` if using MySQL (Assuming default MySQL port) | FALSE |
 | MOODLE_PREFIX | _mdl | ------ | FALSE |
 | MOODLE_FULLNAME | Some Moodle Site Full Name | ------ | FALSE |
 | MOODLE_SHORTNAME | Some Moodle Site Short Name | ------ | FALSE |
@@ -198,4 +200,19 @@ services:
     restart: always
     cap_add:
       - NET_ADMIN
+```
+
+### MySQL Example
+
+Example: To startup an unconfigured local install with default values, no ssl:  
+Start a `mysql` server instance from the official MySQL repository
+
+```console
+docker run --name moodle-mysql -e MYSQL_ROOT_PASSWORD=moodle -e MYSQL_USER=moodle -e MYSQL_PASSWORD=moodle -e MYSQL_DATABASE=moodle -d mysql:latest
+```
+
+Then start a `venatorfox/moodle` instance and link the mysql instance, change dbtype settings, expose port 80.
+
+```console
+docker run --name some-moodle -e MOODLE_WWWROOT=http://localhost -e MOODLE_DBTYPE=mysqli -e MOODLE_DBHOST=moodle-mysql -e MOODLE_DBPORT=3306 --link moodle-mysql -p 80:80 venatorfox/moodle:latest
 ```
