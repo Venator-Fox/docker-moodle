@@ -12,7 +12,7 @@ RUN tar xvfz /tmp/s6-overlay-amd64.tar.gz -C /
 #Install Moodle Required Packages
 RUN apt-get update \
  && apt-get install nginx -y \
- && apt-get install php7.0-fpm php7.0-xml php7.0-pgsql php7.0-curl php7.0-zip php7.0-gd php7.0-mbstring php7.0-xmlrpc php7.0-soap php7.0-intl -y \
+ && apt-get install php7.0-fpm php7.0-xml php7.0-pgsql php7.0-mysql php7.0-curl php7.0-zip php7.0-gd php7.0-mbstring php7.0-xmlrpc php7.0-soap php7.0-intl -y \
  && apt-get install git -y \
  && apt-get install cron -y
 

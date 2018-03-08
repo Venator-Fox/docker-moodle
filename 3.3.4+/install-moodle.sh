@@ -8,6 +8,7 @@ MOODLECFG_SSLPROXY=${MOODLECFG_SSLPROXY:='false'}
 
 MOODLE_LANG=${MOODLE_LANG:='en'}
 MOODLE_WWWROOT=${MOODLE_WWWROOT:='http://localhost'}
+MOODLE_DBTYPE=${MOODLE_DBTYPE:='pgsql'}
 MOODLE_DBHOST=${MOODLE_DBHOST:='moodle-postgres'}
 MOODLE_DBNAME=${MOODLE_DBNAME:='moodle'}
 MOODLE_DBUSER=${MOODLE_DBUSER:='moodle'}
@@ -30,7 +31,7 @@ sleep 30;
   --lang=$MOODLE_LANG \
   --wwwroot=$MOODLE_WWWROOT \
   --dataroot=/var/www/moodledata \
-  --dbtype=pgsql \
+  --dbtype=$MOODLE_DBTYPE \
   --dbhost=$MOODLE_DBHOST \
   --dbname=$MOODLE_DBNAME \
   --dbuser=$MOODLE_DBUSER \
