@@ -56,7 +56,7 @@ It is recommended to set them properly and not use default values.
 | MOODLE_DBUSER | moodle | ------ | FALSE |
 | MOODLE_DBPASS | moodle | ------ | FALSE |
 | MOODLE_DBPORT | 5432 | Change to `3306` if using MySQL (Assuming default MySQL port) | FALSE |
-| MOODLE_PREFIX | _mdl | ------ | FALSE |
+| MOODLE_PREFIX | mdl_ | ------ | FALSE |
 | MOODLE_FULLNAME | Some Moodle Site Full Name | ------ | FALSE |
 | MOODLE_SHORTNAME | Some Moodle Site Short Name | ------ | FALSE |
 | MOODLE_SUMMARY | Some Moodle Summary | ------ | FALSE |
