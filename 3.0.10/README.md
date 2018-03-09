@@ -1,4 +1,4 @@
-[![](https://images.microbadger.com/badges/version/venatorfox/moodle:3.4.1.svg)](http://git.moodle.org/gw?p=moodle.git;a=tree;hb=refs/heads/MOODLE_34_STABLE "MOODLE_34_STABLE (3.4.1+)") [![](https://images.microbadger.com/badges/image/venatorfox/moodle:3.4.1.svg)](https://microbadger.com/images/venatorfox/moodle "View image metadata on MicroBadger") [![Pulls on Docker Hub](https://img.shields.io/docker/pulls/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle)  [![Stars on Docker Hub](https://img.shields.io/docker/stars/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle) [![GitHub Open Issues](https://img.shields.io/github/issues/Venator-Fox/docker-moodle.svg)](https://github.com/Venator-Fox/docker-moodle/issues) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![](https://images.microbadger.com/badges/version/venatorfox/moodle:3.0.10.svg)](http://git.moodle.org/gw?p=moodle.git;a=tree;hb=refs/heads/MOODLE_30_STABLE "MOODLE_30_STABLE (3.0.10)") [![](https://images.microbadger.com/badges/image/venatorfox/moodle:3.0.10.svg)](https://microbadger.com/images/venatorfox/moodle "View image metadata on MicroBadger") [![Pulls on Docker Hub](https://img.shields.io/docker/pulls/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle)  [![Stars on Docker Hub](https://img.shields.io/docker/stars/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle) [![GitHub Open Issues](https://img.shields.io/github/issues/Venator-Fox/docker-moodle.svg)](https://github.com/Venator-Fox/docker-moodle/issues) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ### Supported tags and respective `Dockerfile` links
 
 -   [`3.4.1`, `latest` (*3.4.1/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.4.1%2B/Dockerfile)
@@ -163,7 +163,7 @@ services:
     container_name: moodle
     depends_on:
       - moodle-postgres
-    image: venatorfox/moodle:3.4.1
+    image: venatorfox/moodle:3.3.4
     environment:
       - NGINX_MAX_BODY_SIZE=64M
       - PHPFPM_UPLOAD_MAX_FILESIZE=64M
