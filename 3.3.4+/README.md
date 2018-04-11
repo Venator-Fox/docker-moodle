@@ -49,6 +49,7 @@ It is recommended to set them properly and not use default values.
 | PHPFPM_UPLOAD_MAX_FILESIZE | 2M | Maximum allowed upload filesize for PHP-FPM | TRUE |
 | CRON_MOODLE_INTERVAL | 15 | Interval for Moodle Cron in Minutes | TRUE |
 | MOODLECFG_SSLPROXY | false | Set to true if an SSL proxy container is put infront of the Moodle install, such as HAProxy with SSL termination. An example will be presented in the below docker compose files. | TRUE |
+| MOODLECFG_REVERSEPROXY | false | Set to true if the container is accessed via different base URL. This will prevent redirection loop if the container behind a proxy which strips the url. | TRUE |
 | MOODLE_LANG | en | ------ | FALSE |
 | MOODLE_WWWROOT | http://localhost | Be sure to update to https:// if an SSL proxy is used. | TRUE |
 | MOODLE_DBTYPE | pgsql | Change to `mysqli` if using MySQL | FALSE |
