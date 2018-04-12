@@ -3,6 +3,7 @@
 #Default runtime variables if none is supplied
 NGINX_MAX_BODY_SIZE=${NGINX_MAX_BODY_SIZE:='1M'}
 PHPFPM_UPLOAD_MAX_FILESIZE=${PHPFPM_UPLOAD_MAX_FILESIZE:='2M'}
+PHPFPM_POST_MAX_SIZE=${PHPFPM_POST_MAX_SIZE:='8M'}
 CRON_MOODLE_INTERVAL=${CRON_MOODLE_INTERVAL:='15'}
 MOODLECFG_SSLPROXY=${MOODLECFG_SSLPROXY:='false'}
 MOODLECFG_REVERSEPROXY=${MOODLECFG_REVERSEPROXY:='false'}
@@ -71,6 +72,7 @@ sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /var/www/html
 sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /var/www/html/config.php
 sed -i "/types_hash_max_size 2048;/a \\\tclient_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/nginx/nginx.conf
 sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/php/7.0/fpm/php.ini
+sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/php/7.0/fpm/php.ini
 
 #Self Destruct
 echo "[install-moodle.sh] Install complete, self destructing and exiting."
