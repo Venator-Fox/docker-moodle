@@ -47,10 +47,13 @@ It is recommended to set them properly and not use default values.
 | ------ | ------ | ------ | ------ |
 | NGINX_MAX_BODY_SIZE | 1M | Maximum allowed body size for NGINX | TRUE |
 | PHPFPM_UPLOAD_MAX_FILESIZE | 2M | Maximum allowed upload filesize for PHP-FPM | TRUE |
+| PHPFPM_POST_MAX_SIZE | 8M | Maximum size of post data allowed for PHP-FPM | TRUE |
+| PHPFPM_MAX_EXECUTION_TIME | 30 | Maximum execution time for php scripts | TRUE |
 | CRON_MOODLE_INTERVAL | 15 | Interval for Moodle Cron in Minutes | TRUE |
-| MOODLECFG_SSLPROXY | false | Set to true if an SSL proxy container is put infront of the Moodle install, such as HAProxy with SSL termination. An example will be presented in the below docker compose files. | TRUE |
+| MOODLECFG_SSLPROXY | false | Set to true if an SSL proxy container is put infront of the Moodle install, such as HAProxy with SSL termination; An example will be presented in the below docker compose files | TRUE |
+| MOODLECFG_REVERSEPROXY | false | Set to true if the container is accessed via different base URL, This will prevent redirection loop if the container behind a proxy which strips the url | TRUE |
 | MOODLE_LANG | en | ------ | FALSE |
-| MOODLE_WWWROOT | http://localhost | Be sure to update to https:// if an SSL proxy is used. | TRUE |
+| MOODLE_WWWROOT | http://localhost | Be sure to update to https:// if an SSL proxy is used | TRUE |
 | MOODLE_DBTYPE | pgsql | Change to `mysqli` if using MySQL | FALSE |
 | MOODLE_DBHOST | moodle-postgres | Change to something like `moodle-mysql` if using MySQL | FALSE |
 | MOODLE_DBNAME | moodle | ------ | FALSE |
@@ -63,7 +66,7 @@ It is recommended to set them properly and not use default values.
 | MOODLE_SUMMARY | Some Moodle Summary | ------ | FALSE |
 | MOODLE_ADMINUSER | admin | ------ | FALSE |
 | MOODLE_ADMINPASS | password | ------ | FALSE |
-| MOODLE_ADMINEMAIL | admin@example.com | Address of the Admin of Rainy Clouds, 42nd of Their Name , Breaker of Sanity, and ~~Destroyer~~ Protector of the AD Domain | FALSE |
+| MOODLE_ADMINEMAIL | admin@example.com | ------ | FALSE |
 
 ### Maintenance
 
@@ -167,6 +170,8 @@ services:
     environment:
       - NGINX_MAX_BODY_SIZE=64M
       - PHPFPM_UPLOAD_MAX_FILESIZE=64M
+      - PHPFPM_POST_MAX_SIZE=64M
+      - PHPFPM_MAX_EXECUTION_TIME=60
       - CRON_MOODLE_INTERVAL=15
       - MOODLECFG_SSLPROXY=true
       - MOODLE_WWWROOT=https://localhost

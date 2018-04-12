@@ -3,8 +3,11 @@
 #Default runtime variables if none is supplied
 NGINX_MAX_BODY_SIZE=${NGINX_MAX_BODY_SIZE:='1M'}
 PHPFPM_UPLOAD_MAX_FILESIZE=${PHPFPM_UPLOAD_MAX_FILESIZE:='2M'}
+PHPFPM_POST_MAX_SIZE=${PHPFPM_POST_MAX_SIZE:='8M'}
+PHPFPM_MAX_EXECUTION_TIME=${PHPFPM_MAX_EXECUTION_TIME:='30'}
 CRON_MOODLE_INTERVAL=${CRON_MOODLE_INTERVAL:='15'}
 MOODLECFG_SSLPROXY=${MOODLECFG_SSLPROXY:='false'}
+MOODLECFG_REVERSEPROXY=${MOODLECFG_REVERSEPROXY:='false'}
 
 MOODLE_LANG=${MOODLE_LANG:='en'}
 MOODLE_WWWROOT=${MOODLE_WWWROOT:='http://localhost'}
@@ -53,7 +56,9 @@ chown -R www-data:www-data /var/www/html
 if [ -f /var/www/moodledata/do_not_remove ]; then
  echo "[install-moodle.sh] Breadcrumb file exists, Moodle is probably already installed but missing the config. Recreated config. Self-destructing and exiting."
  sed -i "/\\\*sslproxy\\\*/,+1 d" /var/www/html/config.php
- sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;\n" /var/www/html/config.php
+ sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /var/www/html/config.php
+ sed -i "/\\\*reverseproxy\\\*/,+1 d" /var/www/html/config.php
+ sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /var/www/html/config.php
  rm -- "$0" && exit 0
 fi
 
@@ -64,9 +69,12 @@ echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /var/www/html/admin/cli/cron.
 echo "Presence of this file will prevent execution of the docker install-moodle.sh script if the container is recreated." > /var/www/moodledata/do_not_remove
 
 #Reset some configs with new user defined values (SSL Proxy, Upload Sizes) that are baked in if the container is destroyed
-sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;\n" /var/www/html/config.php
+sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /var/www/html/config.php
+sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /var/www/html/config.php
 sed -i "/types_hash_max_size 2048;/a \\\tclient_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/nginx/nginx.conf
 sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/php/7.0/fpm/php.ini
+sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/php/7.0/fpm/php.ini
+sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/php/7.0/fpm/php.ini
 
 #Self Destruct
 echo "[install-moodle.sh] Install complete, self destructing and exiting."
