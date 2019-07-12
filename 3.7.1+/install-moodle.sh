@@ -68,7 +68,7 @@ echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /var/www/html/admin/cli/cron.
 #Create a breadcrumb file
 echo "Presence of this file will prevent execution of the docker install-moodle.sh script if the container is recreated." > /var/www/moodledata/do_not_remove
 
-#Reset some configs with new user defined values (SSL Proxy, Upload Sizes) that are baked in if the container is destroyed
+#Reset some configs with new user defined values (SSL Proxy, Upload Sizes) that are baked in after the container is destroyed
 sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /var/www/html/config.php
 sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /var/www/html/config.php
 sed -i "/types_hash_max_size 2048;/a \\\tclient_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/nginx/nginx.conf
