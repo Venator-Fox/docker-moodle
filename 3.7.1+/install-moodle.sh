@@ -29,7 +29,7 @@ MOODLE_ADMINEMAIL=${MOODLE_ADMINEMAIL:='support@example.com'}
 sleep 30;
 
 #Moodle CLI to install Moodle with runtime variables
-/usr/bin/php /var/www/html/admin/cli/install.php \
+/opt/rh/rh-php72/root/usr/bin/php /opt/rh/rh-nginx114/root/usr/share/nginx/html/admin/cli/install.php \
   --chmod=2777 \
   --lang=$MOODLE_LANG \
   --wwwroot=$MOODLE_WWWROOT \
@@ -50,31 +50,31 @@ sleep 30;
   --agree-license \
   --non-interactive
 
-chown -R www-data:www-data /var/www/html
+chown -R nginx:nginx /opt/rh/rh-nginx114/root/usr/share/nginx/html
 
 #Indicates this has already been run, and to only update SSL and RootURL's when recreating the config in the core install.
 if [ -f /var/www/moodledata/do_not_remove ]; then
  echo "[install-moodle.sh] Breadcrumb file exists, Moodle is probably already installed but missing the config. Recreated config. Self-destructing and exiting."
- sed -i "/\\\*sslproxy\\\*/,+1 d" /var/www/html/config.php
- sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /var/www/html/config.php
- sed -i "/\\\*reverseproxy\\\*/,+1 d" /var/www/html/config.php
- sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /var/www/html/config.php
+ sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+ sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+ sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+ sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
  rm -- "$0" && exit 0
 fi
 
 #Setup CRON
-echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /var/www/html/admin/cli/cron.php" > /etc/cron.d/moodle
+echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx114/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
 
 #Create a breadcrumb file
 echo "Presence of this file will prevent execution of the docker install-moodle.sh script if the container is recreated." > /var/www/moodledata/do_not_remove
 
 #Reset some configs with new user defined values (SSL Proxy, Upload Sizes) that are baked in after the container is destroyed
-sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /var/www/html/config.php
-sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /var/www/html/config.php
-sed -i "/types_hash_max_size 2048;/a \\\tclient_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/nginx/nginx.conf
-sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/php/7.0/fpm/php.ini
-sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/php/7.0/fpm/php.ini
-sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/php/7.0/fpm/php.ini
+sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+sed -i "/types_hash_max_size 2048;/a \\\tclient_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx114/nginx/nginx.conf
+sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/opt/rh/rh-php72/php.ini
+sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/opt/rh/rh-php72/php.ini
+sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/opt/rh/rh-php72/php.ini
 
 #Self Destruct
 echo "[install-moodle.sh] Install complete, self destructing and exiting."
