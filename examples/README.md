@@ -25,7 +25,7 @@ You can remove this after toying with the example.
 Run the following to generate a quick self-signed SSL certificate:
 
 ~~~
-mkdir -p /srv/docker/volumes/moodle-haproxy/ssl/
+mkdir -p /srv/docker/volumes/moodle-haproxy/haproxy/ssl/
 docker run --rm -v /srv/docker/volumes/moodle-haproxy/haproxy/ssl/:/ssl/:Z -e HOST=localhost -e TYPE=pem project42/selfsignedcert
 ~~~
 
@@ -86,7 +86,7 @@ docker network create moodle-network
 Configure `haproxy.cfg` with SSL, or use a self-signed one if proxying elsewhere.
 
 ~~~
-mkdir -p /srv/docker/volumes/moodle-haproxy/ssl/
+mkdir -p /srv/docker/volumes/moodle-haproxy/haproxy/ssl/
 docker run --rm -v /srv/docker/volumes/moodle-haproxy/haproxy/ssl/:/ssl/:Z -e HOST=localhost -e TYPE=pem project42/selfsignedcert
 ~~~
 
