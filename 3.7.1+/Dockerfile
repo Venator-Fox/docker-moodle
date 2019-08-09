@@ -18,7 +18,7 @@ RUN yum -y install centos-release-scl \
 #Clone Moodle
 RUN rm -rfv /opt/rh/rh-nginx114/root/usr/share/nginx/html/* \
  && git clone --depth=1 -b $MOODLE_RELEASE git://git.moodle.org/moodle.git /opt/rh/rh-nginx114/root/usr/share/nginx/html/ \
- && mkdir -p /opt/rh/rh-nginx114/root/usr/share/nginx/moodledata
+ && mkdir -p /var/moodledata
 
 #Configure webserver as per Moodle Docs
 RUN sed -i '/        location \/ {/ a \\t\tindex  index.php index.html index.htm;' /etc/opt/rh/rh-nginx114/nginx/nginx.conf \

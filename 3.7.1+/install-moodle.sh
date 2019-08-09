@@ -33,7 +33,7 @@ sleep 30;
   --chmod=2777 \
   --lang=$MOODLE_LANG \
   --wwwroot=$MOODLE_WWWROOT \
-  --dataroot=/var/www/moodledata \
+  --dataroot=/var/moodledata \
   --dbtype=$MOODLE_DBTYPE \
   --dbhost=$MOODLE_DBHOST \
   --dbname=$MOODLE_DBNAME \
@@ -53,7 +53,7 @@ sleep 30;
 chown -R nginx:nginx /opt/rh/rh-nginx114/root/usr/share/nginx/html
 
 #Indicates this has already been run, and to only update SSL and RootURL's when recreating the config in the core install.
-if [ -f /var/www/moodledata/do_not_remove ]; then
+if [ -f /var/moodledata/.containersetupdone ]; then
  echo "[install-moodle.sh] Breadcrumb file exists, Moodle is probably already installed but missing the config. Recreated config. Self-destructing and exiting."
  sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
  sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
@@ -66,7 +66,7 @@ fi
 echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx114/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
 
 #Create a breadcrumb file
-echo "Presence of this file will prevent execution of the docker install-moodle.sh script if the container is recreated." > /var/www/moodledata/do_not_remove
+echo "Presence of this file will prevent execution of the docker install-moodle.sh script if the container is recreated." > /var/moodledata/.containersetupdone
 
 #Reset some configs with new user defined values (SSL Proxy, Upload Sizes) that are baked in after the container is destroyed
 sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
