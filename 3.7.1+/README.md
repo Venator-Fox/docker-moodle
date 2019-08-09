@@ -1,225 +1,145 @@
-[![](https://images.microbadger.com/badges/version/venatorfox/moodle:3.4.1.svg)](http://git.moodle.org/gw?p=moodle.git;a=tree;hb=refs/heads/MOODLE_34_STABLE "MOODLE_34_STABLE (3.4.1+)") [![](https://images.microbadger.com/badges/image/venatorfox/moodle:3.4.1.svg)](https://microbadger.com/images/venatorfox/moodle "View image metadata on MicroBadger") [![Pulls on Docker Hub](https://img.shields.io/docker/pulls/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle)  [![Stars on Docker Hub](https://img.shields.io/docker/stars/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle) [![GitHub Open Issues](https://img.shields.io/github/issues/Venator-Fox/docker-moodle.svg)](https://github.com/Venator-Fox/docker-moodle/issues) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-### Supported tags and respective `Dockerfile` links
+[![](https://images.microbadger.com/badges/version/venatorfox/moodle:3.7.1.svg)](http://git.moodle.org/gw?p=moodle.git;a=tree;hb=refs/heads/MOODLE_34_STABLE "MOODLE_34_STABLE (3.7.1+)") [![](https://images.microbadger.com/badges/image/venatorfox/moodle:3.7.1.svg)](https://microbadger.com/images/venatorfox/moodle "View image metadata on MicroBadger") [![Pulls on Docker Hub](https://img.shields.io/docker/pulls/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle)  [![Stars on Docker Hub](https://img.shields.io/docker/stars/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle) [![GitHub Open Issues](https://img.shields.io/github/issues/Venator-Fox/docker-moodle.svg)](https://github.com/Venator-Fox/docker-moodle/issues) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
--   [`3.7.1`, `latest` (*3.7.1/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.7.1%2B/Dockerfile)
--   [`3.4.1`, (*3.4.1/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.4.1%2B/Dockerfile)
--   [`3.3.4`, (*3.3.4/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.3.4%2B/Dockerfile)
--   [`3.0.10`, (*3.0.10/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.0.10/Dockerfile)
+### Examples
 
-### How to use this image
+This directory contains some example files in order to run the [venatorfox/moodle](https://hub.docker.com/r/venatorfox/moodle/) in a more complex manner. (ie. with SSL termination, HAProxy, etc...) These examples assume this is installed in a non-orchestrated manner on a host.
 
-Example: To startup an unconfigured local install with default values, no ssl:  
-Start a `postgres` server instance from the official postgres repository
+The following examples are provided here:   
+- HAProxy SSL Termination, Self Signed SSL, and common configurations via docker-compose (for development)  
+- HAProxy SSL Termination, Let's Encrypt CA, and common configurations via systemd (for production)
 
-| If `mysql` is desired, please see example at the end of this Readme
+#### HAProxy SSL Termination, and common configurations via docker-compose  
+> This is recommended for testing. Compose is not recommended for production.
 
-```console
-$ docker run --name moodle-postgres -e POSTGRES_USER=moodle -e POSTGRES_PASSWORD=moodle -e POSTGRES_DB=moodle -d postgres:latest
-```
+This example will run HAProxy with snakeoil SSL termination for https://localhost.
 
-Then start a `venatorfox/moodle` instance and link the postgres instance, expose port 80.
+You will need the `haproxy.cfg` and `docker-compose.yml` files from the examples directory.
 
-```console
-$ docker run --name some-moodle -e MOODLE_WWWROOT=http://localhost --link moodle-postgres -p 80:80 venatorfox/moodle:latest
-```
+An entry to the hosts file can be added to whatever for testing. HAProxy will handle SSL.
+Be sure to adjust the HOST environment variable below for whatever localhost self-signed certificate desired.
+Of course in production use a real CA, like LetsEncrypt.
 
-If this is a new db install, grab some coffee and wait until the webserver starts (indicated by `[services.d] done` in the log).
-Visit the site at http://localhost, default unconfigured username is "admin" and password is "password". #superSecure 
-
-See below for available runtime environment variables for a more specific configuration.
-
-Volumes can be mounted for the moodledata, postgres data for persistant storage.
-
-> The Moodle config.php will be created at run and baked into the Moodle Core Install.
-> Like all of the other Moodle files, the config.php will be ephemeral, please do not edit it directly.
-> Should changes be made, simply destroy the container and run it again with the desired runtime environment variables.
-
-### Runtime Environment Variables
-
-The following variables can be overridden at run or in docker-compose. 
-Mutable variables update ephemeral container configs if run ontop of an existing db install from this image. You will not need to destroy your containers, they will apply on a rerun.
-
-If changes need to be done on immutable variables, the contaianer will need to be destroyed and brought up again. Be sure to persist data in a manner which easily allows this for easy future upgrades.
-
-It is recommended to set them properly and not use default values. 
-(Unless you want limits at 1M & no SSL, with your admin password being password (Can you not, kthx)).
-
-| Variable | Default Value | Description | Mutable |
-| ------ | ------ | ------ | ------ |
-| NGINX_MAX_BODY_SIZE | 1M | Maximum allowed body size for NGINX | TRUE |
-| PHPFPM_UPLOAD_MAX_FILESIZE | 2M | Maximum allowed upload filesize for PHP-FPM | TRUE |
-| PHPFPM_POST_MAX_SIZE | 8M | Maximum size of post data allowed for PHP-FPM | TRUE |
-| PHPFPM_MAX_EXECUTION_TIME | 30 | Maximum execution time for php scripts | TRUE |
-| CRON_MOODLE_INTERVAL | 15 | Interval for Moodle Cron in Minutes | TRUE |
-| MOODLECFG_SSLPROXY | false | Set to true if an SSL proxy container is put infront of the Moodle install, such as HAProxy with SSL termination; An example will be presented in the below docker compose files | TRUE |
-| MOODLECFG_REVERSEPROXY | false | Set to true if the container is accessed via different base URL, This will prevent redirection loop if the container behind a proxy which strips the url | TRUE |
-| MOODLE_LANG | en | ------ | FALSE |
-| MOODLE_WWWROOT | http://localhost | Be sure to update to https:// if an SSL proxy is used | TRUE |
-| MOODLE_DBTYPE | pgsql | Change to `mysqli` if using MySQL | FALSE |
-| MOODLE_DBHOST | moodle-postgres | Change to something like `moodle-mysql` if using MySQL | FALSE |
-| MOODLE_DBNAME | moodle | ------ | FALSE |
-| MOODLE_DBUSER | moodle | ------ | FALSE |
-| MOODLE_DBPASS | moodle | ------ | FALSE |
-| MOODLE_DBPORT | 5432 | Change to `3306` if using MySQL (Assuming default MySQL port) | FALSE |
-| MOODLE_PREFIX | mdl_ | ------ | FALSE |
-| MOODLE_FULLNAME | Some Moodle Site Full Name | ------ | FALSE |
-| MOODLE_SHORTNAME | Some Moodle Site Short Name | ------ | FALSE |
-| MOODLE_SUMMARY | Some Moodle Summary | ------ | FALSE |
-| MOODLE_ADMINUSER | admin | ------ | FALSE |
-| MOODLE_ADMINPASS | password | ------ | FALSE |
-| MOODLE_ADMINEMAIL | admin@example.com | ------ | FALSE |
-
-### Maintenance
-
-Please [Create an issue](https://github.com/Venator-Fox/docker-moodle/issues) if needed.
-
-### Todos
- - Add some "is postgres ready?" wait instead of a timer on creation.
-
-### More Complex Compose Example, SSL Termination with HAProxy
-
-This example will run HAProxy with SSL termination for https://localhost.
-Of course in actual production use a real CA, like LetsEncrypt.
-
-Note that running this compose file will create files in `/opt/docker/volumes/` on your host.
+Note that running this compose file will create files in `/srv/docker/volumes/` on your host.
 You can remove this after toying with the example.
 
-Run the following two commands:
+Run the following to generate a quick self-signed SSL certificate:
+
+~~~
+mkdir -p /srv/docker/volumes/moodle-haproxy/ssl/
+docker run --rm -v /srv/docker/volumes/moodle-haproxy/ssl/:/ssl/ -e HOST=localhost -e TYPE=pem project42/selfsignedcert
+~~~
+
+Copy the `haproxy.cfg` from the examples directory to `/srv/docker/volumes/moodle-haproxy/haproxy`
+
+Compose version in this example is v3.5  
+Run `docker-compose -f docker-compose.yml up` to bring the stack up with your variables.
+After install, visit [https://localhost](https://localhost).  
+Use `docker-compose -f docker-compose.yml down` to destroy all containers.
+
+#### HAProxy SSL Termination, and common configurations via systemd  
+> This is recommended for production for non-orchestrated installs. These unit files will start containers systemd. If you have no SSL certificate please look into LetsEncrypt CA. A good containerized deployment by linuxserver is located here: [linuxserver/letsencrypt](https://hub.docker.com/r/linuxserver/letsencrypt/)
+
+Note that running these will create files in `/srv/docker/volumes/` on your host. Use these example files to your preference. Some examples are below, tested with CentOS/RHEL
+
+> Method 1 (Copy to local config dir `/etc/systemd/system/`)
+>
+~~~
+cp -rfv /some/location/docker-moodle/examples/systemd/*.service /etc/systemd/system/
+~~~
+
+or
+
+> Method 2 (Symlink to vendor/pkg dir `/usr/lib/systemd/system/`) (use full paths)
+>
 ```console
-mkdir -p /opt/docker/volumes/moodle-haproxy/ssl
-docker run --rm -v /opt/docker/volumes/moodle-haproxy/ssl:/ssl -e HOST=localhost -e TYPE=pem project42/selfsignedcert
+ln -s /some/location/docker-moodle/examples/systemd/moodle-haproxy.service /usr/lib/systemd/system/
+ln -s /some/location/docker-moodle/examples/systemd/moodle-postgres.service /usr/lib/systemd/system/
+ln -s /some/location/docker-moodle/examples/systemd/some-moodle.service /usr/lib/systemd/system/
 ```
 
-Then, create this `haproxy.cfg` at `/opt/docker/volumes/moodle-haproxy/haproxy.cfg`
+or
+
+> Method 3 (Use the unit files directly)
+>
 ```console
-global
-    #debug
-    chroot /var/lib/haproxy
-    user haproxy
-    group haproxy
-    pidfile /var/run/haproxy.pid
-
-    # Default SSL material locations
-    ca-base /etc/ssl/certs
-    crt-base /etc/ssl/private
-
-    # Default ciphers to use on SSL-enabled listening sockets.
-    ssl-default-bind-options   no-sslv3 no-tls-tickets force-tlsv12
-    ssl-default-bind-ciphers   ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
-
-    spread-checks 4
-    tune.maxrewrite 1024
-    tune.ssl.default-dh-param 2048
-
-defaults
-    mode    http
-    balance roundrobin
-
-    option  dontlognull
-    option  dontlog-normal
-    option  redispatch
-
-    maxconn 5000
-    timeout connect 5s
-    timeout client  20s
-    timeout server  20s
-    timeout queue   30s
-    timeout http-request 5s
-    timeout http-keep-alive 15s
-
-frontend http-in
-    bind *:80
-    reqadd X-Forwarded-Proto:\ http
-    default_backend nodes-http
-
-frontend https-in
-    bind *:443 ssl crt /etc/haproxy/ssl/localhost.pem
-    reqadd X-Forwarded-Proto:\ https
-    default_backend nodes-http
-
-backend nodes-http
-    redirect scheme https if !{ ssl_fc }
-    server node1 moodle:80 check
+systemctl start /some/location/docker-moodle/examples/systemd/moodle-haproxy.service
 ```
 
-Finally, save this v2 compose file as `docker-compose-example.yml` somewhere.
-Run `docker-compose -f docker-compose-example.yml up` to bring the stack up.
-Go get coffee. After install Visit https://localhost.
-Use `docker-compose -f docker-compose-example.yml down` to destroy containers after playing.
+Create persistant directory `ssl` for `moodle-haproxy`
 
-```console
-version: '2'
+~~~
+mkdir -p /srv/docker/volumes/moodle-haproxy/haproxy/ssl
+~~~
 
-services:
+Copy the `haproxy.cfg` from the examples directory to `/srv/docker/volumes/moodle-haproxy/haproxy/`
 
-  moodle-postgres:
-    container_name: moodle-postgres
-    image: postgres:9.6.3
-    volumes:
-      - /opt/docker/volumes/moodle-postgres/data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_PASSWORD=moodle
-      - POSTGRES_USER=moodle
-      - POSTGRES_DB=moodle
-    restart: always
+~~~
+cp -v /some/location/docker-moodle/examples/haproxy/haproxy.cfg /srv/docker/volumes/moodle-haproxy/haproxy/
+~~~
 
-  moodle:
-    container_name: moodle
-    depends_on:
-      - moodle-postgres
-    image: venatorfox/moodle:3.4.1
-    environment:
-      - NGINX_MAX_BODY_SIZE=64M
-      - PHPFPM_UPLOAD_MAX_FILESIZE=64M
-      - PHPFPM_POST_MAX_SIZE=64M
-      - PHPFPM_MAX_EXECUTION_TIME=60
-      - CRON_MOODLE_INTERVAL=15
-      - MOODLECFG_SSLPROXY=true
-      - MOODLE_WWWROOT=https://localhost
-      - MOODLE_DBHOST=moodle-postgres
-      - MOODLE_DBNAME=moodle
-      - MOODLE_DBUSER=moodle
-      - MOODLE_DBPASS=moodle
-      - MOODLE_FULLNAME=Educational Service Unit 10
-      - MOODLE_SHORTNAME=ESU10
-      - MOODLE_SUMMARY=This is the LMS for ESU10
-      - MOODLE_ADMINUSER=admin
-      - MOODLE_ADMINPASS=password
-      - MOODLE_ADMINEMAIL=adam.zheng@esu10.org
-    links:
-      - moodle-postgres
-    volumes:
-      - /opt/docker/volumes/moodle/moodledata/:/var/www/moodledata/
-    restart: always
+Create a network. 
 
-  moodle-haproxy:
-    container_name: moodle-haproxy
-    image: million12/haproxy:latest
-    depends_on:
-      - moodle
-    links:
-      - moodle
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - /opt/docker/volumes/moodle-haproxy:/etc/haproxy
-    restart: always
-    cap_add:
-      - NET_ADMIN
-```
+~~~
+docker network create moodle-network
+~~~
 
-### MySQL Example
+Enable and start `moodle-haproxy`, this will bring up the rest of the containers
 
-Example: To startup an unconfigured local install with default values, no ssl:  
-Start a `mysql` server instance from the official MySQL repository
+~~~
+systemctl enable --now moodle-haproxy
+~~~
 
-```console
-docker run --name moodle-mysql -e MYSQL_ROOT_PASSWORD=moodle -e MYSQL_USER=moodle -e MYSQL_PASSWORD=moodle -e MYSQL_DATABASE=moodle -d mysql:latest
-```
+Verify:
 
-Then start a `venatorfox/moodle` instance and link the mysql instance, change dbtype settings, expose port 80.
+~~~
+systemctl status moodle-haproxy
 
-```console
-docker run --name some-moodle -e MOODLE_WWWROOT=http://localhost -e MOODLE_DBTYPE=mysqli -e MOODLE_DBHOST=moodle-mysql -e MOODLE_DBPORT=3306 --link moodle-mysql -p 80:80 venatorfox/moodle:latest
-```
+● moodle-haproxy.service - Moodle HAProxy Container (moodle-haproxy)
+   Loaded: loaded (/etc/systemd/system/moodle-haproxy.service; enabled; vendor preset: disabled)
+   Active: active (running) since Wed 2019-07-10 15:50:25 CDT; 21s ago
+~~~
+
+~~~
+docker ps -a
+
+CONTAINER ID        IMAGE                      COMMAND                  CREATED              STATUS              PORTS                                      NAMES
+20a6024c0f85        million12/haproxy:latest   "/bootstrap.sh"          About a minute ago   Up About a minute   0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp   moodle-haproxy
+525d546798f1        venatorfox/moodle:3.7.4    "/init"                  About a minute ago   Up About a minute                                              some-moodle
+993f8766dcf2        postgres:11.4              "docker-entrypoint.s…"   About a minute ago   Up About a minute   5432/tcp                                   moodle-postgres
+~~~
+
+##### Other Notes
+
+When translating docker run into systemd unit files, be sure to use `systemd-escape` when needed. (ie spaces or special characters):
+
+~~~
+systemd-escape 'Something with spaces'
+Something\x20with\x20spaces\x21
+~~~
+
+For Example:
+
+~~~
+docker run --name some-moodle \
+           --network moodle-network \
+           --env MOODLE_WWWROOT=https://localhost \
+           --env NGINX_MAX_BODY_SIZE=64M \
+           --env PHPFPM_UPLOAD_MAX_FILESIZE=64M \
+           --env PHPFPM_POST_MAX_SIZE=64M \
+           --env MOODLE_FULLNAME=Some Full Organization Name \
+           --publish 80:80 venatorfox/moodle:3.7.1
+~~~
+
+Would look like this in a unit file
+
+~~~
+ExecStart=/usr/bin/docker run --name some-moodle \
+                              --network moodle-network \
+                              --env MOODLE_WWWROOT=http://localhost \
+                              --env NGINX_MAX_BODY_SIZE=64M \
+                              --env PHPFPM_UPLOAD_MAX_FILESIZE=64M \
+                              --env PHPFPM_POST_MAX_SIZE=64M \
+                              --env MOODLE_FULLNAME=Some\x20Full\x20Organization\x20Name \
+                              --publish 80:80 venatorfox/moodle:3.7.1
+~~~
+

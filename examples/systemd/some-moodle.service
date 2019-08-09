@@ -1,0 +1,35 @@
+[Unit]
+Description=Some Moodle Container (some-moodle.service)
+Requires=docker.service moodle-postgres.service
+After=docker.service moodle-postgres.service
+
+[Service]
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker stop %N
+ExecStartPre=-/usr/bin/docker rm %N
+ExecStartPre=/usr/bin/docker pull venatorfox/moodle:3.7.1
+ExecStart=/usr/bin/docker run -t --rm --name %N \
+                                 --network moodle-network \
+                                 --env NGINX_MAX_BODY_SIZE=64M \
+                                 --env PHPFPM_UPLOAD_MAX_FILESIZE=64M \
+                                 --env PHPFPM_POST_MAX_SIZE=64M \
+                                 --env PHPFPM_MAX_EXECUTION_TIME=60 \
+                                 --env MOODLECFG_SSLPROXY=true \
+                                 --env MOODLE_WWWROOT=https://localhost \
+                                 --env MOODLE_DBHOST=moodle-postgres \
+                                 --env MOODLE_DBNAME=moodle \
+                                 --env MOODLE_DBUSER=moodle \
+                                 --env MOODLE_DBPASS=moodle \
+                                 --env MOODLE_FULLNAME=MOODLE_FULLNAME=Some Full Organization Name \
+                                 --env MOODLE_SHORTNAME=SFON \
+                                 --env MOODLE_SUMMARY=This is the LMS for Some Full Organization \
+                                 --env MOODLE_ADMINUSER=admin \
+                                 --env MOODLE_ADMINPASS=password \
+                                 --env MOODLE_ADMINEMAIL=adam.w.zheng@icloud.com \
+                                 --volume /srv/docker/volumes/%N/moodledata/:/var/moodledata/:Z \
+                                 venatorfox/moodle:3.7.1
+ExecStop=/usr/bin/docker stop %N
+
+[Install]
+WantedBy=multi-user.target
