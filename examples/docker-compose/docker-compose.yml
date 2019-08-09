@@ -1,0 +1,65 @@
+version: '3.5'
+
+networks:
+  moodle-network:
+    name: moodle-network
+    driver: bridge
+
+services:
+
+  moodle-postgres:
+    container_name: moodle-postgres
+    image: postgres:11.4
+    volumes:
+      - /srv/docker/volumes/moodle-postgres/data/:/var/lib/postgresql/data/:Z
+    environment:
+      - POSTGRES_PASSWORD=moodle
+      - POSTGRES_USER=moodle
+      - POSTGRES_DB=moodle
+    restart: always
+    networks:
+      - moodle-network
+
+  some-moodle:
+    container_name: some-moodle
+    depends_on:
+      - moodle-postgres
+    image: venatorfox/moodle:3.7.1
+    environment:
+      - NGINX_MAX_BODY_SIZE=64M
+      - PHPFPM_UPLOAD_MAX_FILESIZE=64M
+      - PHPFPM_POST_MAX_SIZE=64M
+      - PHPFPM_MAX_EXECUTION_TIME=60
+      - MOODLECFG_SSLPROXY=true
+      - MOODLE_WWWROOT=https://localhost
+      - MOODLE_DBHOST=moodle-postgres
+      - MOODLE_DBNAME=moodle
+      - MOODLE_DBUSER=moodle
+      - MOODLE_DBPASS=moodle
+      - MOODLE_FULLNAME=Some Full Organization Name
+      - MOODLE_SHORTNAME=SFON
+      - MOODLE_SUMMARY=This is the LMS for Some Full Organization
+      - MOODLE_ADMINUSER=admin
+      - MOODLE_ADMINPASS=password
+      - MOODLE_ADMINEMAIL=adam.w.zheng@icloud.com
+    volumes:
+      - /srv/docker/volumes/some-moodle/moodledata/:/var/moodledata/:Z
+    restart: always
+    networks:
+      - moodle-network
+
+  moodle-haproxy:
+    container_name: moodle-haproxy
+    image: million12/haproxy:latest
+    depends_on:
+      - some-moodle
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /srv/docker/volumes/moodle-haproxy/haproxy/:/etc/haproxy/:Z
+    restart: always
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - moodle-network
