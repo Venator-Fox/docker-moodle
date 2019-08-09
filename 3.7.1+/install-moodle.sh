@@ -25,6 +25,53 @@ MOODLE_ADMINUSER=${MOODLE_ADMINUSER:='admin'}
 MOODLE_ADMINPASS=${MOODLE_ADMINPASS:='password'}
 MOODLE_ADMINEMAIL=${MOODLE_ADMINEMAIL:='support@example.com'}
 
+INSTALL_PLUGIN_URLS=${INSTALL_PLUGIN_URLS:=}
+
+PLUGIN_DOWNLOAD_URL_ARRAY=($INSTALL_PLUGIN_URLS)
+MOODLE_WWW_ROOT=/opt/rh/rh-nginx114/root/usr/share/nginx/html/
+
+#Set ephemeral configs
+sed -i "/types_hash_max_size 2048;/a \    client_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx114/nginx/nginx.conf
+sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/opt/rh/rh-php72/php.ini
+sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/opt/rh/rh-php72/php.ini
+sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/opt/rh/rh-php72/php.ini
+
+#Install plugins, if any
+if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
+	echo "[INFO] Plugins are to be installed, installing unzip..."
+	yum install -y unzip > /dev/null
+	echo "[INFO] installed unzip."
+        for i in ${PLUGIN_DOWNLOAD_URL_ARRAY[@]}; do
+                ELEMENTS=${#PLUGIN_DOWNLOAD_URL_ARRAY[@]}
+                COUNTER=1
+                PLUGIN_BASENAME=$(basename $i)
+                PLUGIN_TYPE=$(echo $PLUGIN_BASENAME | awk -F '_' '{ print $1 }')
+                PLUGIN_ARCHIVE_PATH=$MOODLE_WWW_ROOT$PLUGIN_TYPE/$PLUGIN_BASENAME
+
+                echo "[INFO] Processing plugin ($COUNTER/$ELEMENTS): $PLUGIN_BASENAME"
+                echo "[INFO] Plugin type determined to be: $PLUGIN_TYPE"
+                echo "[INFO] Downloading $PLUGIN_BASENAME from $i..."
+
+                curl -sS "$i" -o $PLUGIN_ARCHIVE_PATH > /dev/null
+
+                echo "[INFO] Wrote archive to: $PLUGIN_ARCHIVE_PATH"
+
+                echo "[INFO] Extracting $PLUGIN_BASENAME..."
+                unzip -o $PLUGIN_ARCHIVE_PATH -d $MOODLE_WWW_ROOT$PLUGIN_TYPE > /dev/null
+                rm -f $PLUGIN_ARCHIVE_PATH
+		echo "[INFO] Removed $PLUGIN_ARCHIVE_PATH"
+
+                echo "[INFO] Installed plugin $(echo $PLUGIN_BASENAME | awk -F '.' '{print $1}' )"
+
+                (( COUNTER++ ))
+        done;
+	echo "[INFO] Removing unzip..."
+	yum remove unzip > /dev/null
+	echo "[INFO] Removed unzip."
+else
+        echo "[INFO] Plugin env array is empty, skipping plugin install..."
+fi
+
 #This is terrible, TODO to actually wait until the DB is up. For now this works but wastes 30 seconds if recreating the container.
 sleep 30;
 
@@ -54,12 +101,12 @@ chown -R nginx:nginx /opt/rh/rh-nginx114/root/usr/share/nginx/html
 
 #Indicates this has already been run, and to only update SSL and RootURL's when recreating the config in the core install.
 if [ -f /var/moodledata/.containersetupdone ]; then
- echo "[install-moodle.sh] Breadcrumb file exists, Moodle is probably already installed but missing the config. Recreated config. Self-destructing and exiting."
- sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
- sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
- sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
- sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
- rm -- "$0" && exit 0
+	echo "[install-moodle.sh] Breadcrumb file exists, Moodle is probably already installed but missing the config. Recreated config. Self-destructing and exiting."
+	sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+	sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+	sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+	sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+	rm -- "$0" && exit 0
 fi
 
 #Setup CRON
@@ -67,14 +114,6 @@ echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx114/root/usr/
 
 #Create a breadcrumb file
 echo "Presence of this file will prevent execution of the docker install-moodle.sh script if the container is recreated." > /var/moodledata/.containersetupdone
-
-#Reset some configs with new user defined values (SSL Proxy, Upload Sizes) that are baked in after the container is destroyed
-sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-sed -i "/types_hash_max_size 2048;/a \\\tclient_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx114/nginx/nginx.conf
-sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/opt/rh/rh-php72/php.ini
-sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/opt/rh/rh-php72/php.ini
-sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/opt/rh/rh-php72/php.ini
 
 #Self Destruct
 echo "[install-moodle.sh] Install complete, self destructing and exiting."

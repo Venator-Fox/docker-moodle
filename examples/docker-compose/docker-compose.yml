@@ -26,9 +26,9 @@ services:
       - moodle-postgres
     image: venatorfox/moodle:3.7.1
     environment:
-      - NGINX_MAX_BODY_SIZE=64M
-      - PHPFPM_UPLOAD_MAX_FILESIZE=64M
-      - PHPFPM_POST_MAX_SIZE=64M
+      - NGINX_MAX_BODY_SIZE=256M
+      - PHPFPM_UPLOAD_MAX_FILESIZE=256M
+      - PHPFPM_POST_MAX_SIZE=256M
       - PHPFPM_MAX_EXECUTION_TIME=60
       - MOODLECFG_SSLPROXY=true
       - MOODLE_WWWROOT=https://localhost
@@ -42,6 +42,7 @@ services:
       - MOODLE_ADMINUSER=admin
       - MOODLE_ADMINPASS=password
       - MOODLE_ADMINEMAIL=adam.w.zheng@icloud.com
+      - INSTALL_PLUGIN_URLS=https://moodle.org/plugins/download.php/19164/auth_saml2_moodle35_2019022100.zip https://moodle.org/plugins/download.php/19871/theme_adaptable_moodle37_2019062800.zip
     volumes:
       - /srv/docker/volumes/some-moodle/moodledata/:/var/moodledata/:Z
     restart: always
