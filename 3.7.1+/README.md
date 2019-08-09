@@ -8,7 +8,7 @@ Supported tags and respective `Dockerfile` links
 -   ~~[`3.3.4`, (*3.3.4/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.3.4%2B/Dockerfile)~~
 -   ~~[`3.0.10`, (*3.0.10/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.0.10/Dockerfile)~~
 
-Now with plugin support via `docker --e`!
+Now with plugin support via `docker -e`!
 
 ### How to use this image
 
