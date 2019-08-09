@@ -25,6 +25,12 @@ MOODLE_ADMINUSER=${MOODLE_ADMINUSER:='admin'}
 MOODLE_ADMINPASS=${MOODLE_ADMINPASS:='password'}
 MOODLE_ADMINEMAIL=${MOODLE_ADMINEMAIL:='support@example.com'}
 
+#Set ephemeral configs
+sed -i "/types_hash_max_size 2048;/a \    client_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx114/nginx/nginx.conf
+sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/opt/rh/rh-php72/php.ini
+sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/opt/rh/rh-php72/php.ini
+sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/opt/rh/rh-php72/php.ini
+
 #This is terrible, TODO to actually wait until the DB is up. For now this works but wastes 30 seconds if recreating the container.
 sleep 30;
 
@@ -67,14 +73,6 @@ echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx114/root/usr/
 
 #Create a breadcrumb file
 echo "Presence of this file will prevent execution of the docker install-moodle.sh script if the container is recreated." > /var/moodledata/.containersetupdone
-
-#Reset some configs with new user defined values (SSL Proxy, Upload Sizes) that are baked in after the container is destroyed
-sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-sed -i "/types_hash_max_size 2048;/a \\\tclient_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx114/nginx/nginx.conf
-sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/opt/rh/rh-php72/php.ini
-sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/opt/rh/rh-php72/php.ini
-sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/opt/rh/rh-php72/php.ini
 
 #Self Destruct
 echo "[install-moodle.sh] Install complete, self destructing and exiting."
