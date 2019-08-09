@@ -8,6 +8,8 @@ Supported tags and respective `Dockerfile` links
 -   ~~[`3.3.4`, (*3.3.4/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.3.4%2B/Dockerfile)~~
 -   ~~[`3.0.10`, (*3.0.10/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.0.10/Dockerfile)~~
 
+Now with plugin support via `docker --e`!
+
 ### How to use this image
 
 Example: To startup a super basic, unconfigured local install with default values, no ssl.
@@ -40,16 +42,6 @@ docker run --rm -d --name some-moodle \
            --publish 80:80 \
            venatorfox/moodle:3.7.1
 ```
-
-Grab a covfefe and wait until installation or startup is complete, as indicated by:
-
-~~~
-[cont-init.d] done.
-[services.d] starting services
-[services.d] done.
-~~~
-
-Visit the site at [http://localhost](http://localhost).
 
 ##### MySQL Variant
 
@@ -86,9 +78,9 @@ docker run --rm -d --name some-moodle \
 ```
 
 If this is a new db install, grab some covfefe and wait until the webserver starts (indicated by `[services.d] done` in the log).
-Visit the site at http://localhost, default username (if nothing was configured via --env) is "admin" and password "password". #superSecure 
+Visit the site at Visit the site at [http://localhost](http://localhost), default username (if nothing was configured via --env) is "admin" and password "password". #superSecure 
 
-See below for available runtime environment variables for a more specific configuration.
+See below for available runtime environment variables for a more specific configuration, such as plugin installation.
 
 Volumes can be mounted for the moodledata, postgres data for persistant storage.
 
@@ -105,11 +97,11 @@ Ephemeral variables can be changed on existing installations via container rebui
 
 | Variable | Default Value | Description | Ephemeral |
 | ------ | ------ | ------ | ------ |
-| NGINX_MAX_BODY_SIZE | 1M | Maximum allowed body size for NGINX | TRUE |
-| PHPFPM_UPLOAD_MAX_FILESIZE | 2M | Maximum allowed upload filesize for PHP-FPM | TRUE |
-| PHPFPM_POST_MAX_SIZE | 8M | Maximum size of post data allowed for PHP-FPM | TRUE |
-| PHPFPM_MAX_EXECUTION_TIME | 30 | Maximum execution time for php scripts | TRUE |
-| CRON_MOODLE_INTERVAL | 15 | Interval for Moodle Cron in Minutes | TRUE |
+| NGINX\_MAX\_BODY\_SIZE | 1M | Maximum allowed body size for NGINX | TRUE |
+| PHPFPM\_UPLOAD\_MAX\_FILESIZE | 2M | Maximum allowed upload filesize for PHP-FPM | TRUE |
+| PHPFPM\_POST\_MAX\_SIZE | 8M | Maximum size of post data allowed for PHP-FPM | TRUE |
+| PHPFPM\_MAX\_EXECUTION\_TIME | 30 | Maximum execution time for php scripts | TRUE |
+| CRON\_MOODLE\_INTERVAL | 15 | Interval for Moodle Cron in Minutes | TRUE |
 | MOODLECFG_SSLPROXY | false | Set to true if an SSL proxy container is put infront of the Moodle install, such as HAProxy with SSL termination; An example will be presented in the below docker compose files | TRUE |
 | MOODLECFG_REVERSEPROXY | false | Set to true if the container is accessed via different base URL, This will prevent redirection loop if the container behind a proxy which strips the url | TRUE |
 | MOODLE_LANG | en | ------ | FALSE |
@@ -127,9 +119,10 @@ Ephemeral variables can be changed on existing installations via container rebui
 | MOODLE_ADMINUSER | admin | ------ | FALSE |
 | MOODLE_ADMINPASS | password | ------ | FALSE |
 | MOODLE_ADMINEMAIL | admin@example.com | ------ | FALSE |
+| INSTALL\_PLUGIN\_URLS | | Enter a list of plugin URLS, seperated by spaces. As URL's often change with new versions, it is recommended to host your own instead of downloading them from Moodle. | TRUE |
 
 ### More Complex Examples
-Some more complex (ie. with SSL termination, LetsEncrypt, etc...) setup examples are located in the README.md within the [examples directory](https://github.com/Venator-Fox/docker-moodle/tree/master/examples).
+Some more complex (ie. with SSL termination, Plugins, etc...) setup examples are located in the README.md within the [examples directory](https://github.com/Venator-Fox/docker-moodle/tree/master/examples).
 
 ### Maintenance
 
