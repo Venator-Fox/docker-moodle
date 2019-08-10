@@ -30,40 +30,6 @@ INSTALL_PLUGIN_URLS=${INSTALL_PLUGIN_URLS:=}
 PLUGIN_DOWNLOAD_URL_ARRAY=($INSTALL_PLUGIN_URLS)
 MOODLE_WWW_ROOT=/opt/rh/rh-nginx114/root/usr/share/nginx/html/
 
-#Install plugins, if any
-if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
-    echo "[$(basename $0)] Plugins are to be installed, installing unzip..."
-    yum install -y unzip > /dev/null
-    echo "[$(basename $0)] installed unzip."
-        for i in ${PLUGIN_DOWNLOAD_URL_ARRAY[@]}; do
-                (( COUNTER++ ))
-                ELEMENTS=${#PLUGIN_DOWNLOAD_URL_ARRAY[@]}
-                PLUGIN_BASENAME=$(basename $i)
-                PLUGIN_TYPE=$(echo $PLUGIN_BASENAME | awk -F '_' '{ print $1 }')
-                PLUGIN_ARCHIVE_PATH=$MOODLE_WWW_ROOT$PLUGIN_TYPE/$PLUGIN_BASENAME
-
-                echo "[$(basename $0)] Processing plugin ($COUNTER/$ELEMENTS): $PLUGIN_BASENAME"
-                echo "[$(basename $0)] Plugin type determined to be: $PLUGIN_TYPE"
-                echo "[$(basename $0)] Downloading $PLUGIN_BASENAME from $i..."
-
-                curl -sS "$i" -o $PLUGIN_ARCHIVE_PATH > /dev/null
-
-                echo "[$(basename $0)] Wrote archive to: $PLUGIN_ARCHIVE_PATH"
-
-                echo "[$(basename $0)] Extracting $PLUGIN_BASENAME..."
-                unzip -o $PLUGIN_ARCHIVE_PATH -d $MOODLE_WWW_ROOT$PLUGIN_TYPE > /dev/null
-                rm -f $PLUGIN_ARCHIVE_PATH
-                echo "[$(basename $0)] Removed $PLUGIN_ARCHIVE_PATH"
-
-                echo "[$(basename $0)] Installed plugin $(echo $PLUGIN_BASENAME | awk -F '.' '{print $1}' )"
-        done;
-    echo "[$(basename $0)] Removing unzip..."
-    yum remove unzip > /dev/null
-    echo "[$(basename $0)] Removed unzip."
-else
-    echo "[$(basename $0)] Plugin env array is empty, skipping plugin install..."
-fi
-
 #This is terrible, TODO to actually wait until the DB is up. For now this works but wastes 30 seconds if recreating the container.
 sleep 30;
 
@@ -100,6 +66,40 @@ sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/c
 sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
 sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
 sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+
+#Install plugins, if any
+if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
+    echo "[$(basename $0)] Plugins are to be installed, installing unzip..."
+    yum install -y unzip > /dev/null
+    echo "[$(basename $0)] installed unzip."
+        for i in ${PLUGIN_DOWNLOAD_URL_ARRAY[@]}; do
+                (( COUNTER++ ))
+                ELEMENTS=${#PLUGIN_DOWNLOAD_URL_ARRAY[@]}
+                PLUGIN_BASENAME=$(basename $i)
+                PLUGIN_TYPE=$(echo $PLUGIN_BASENAME | awk -F '_' '{ print $1 }')
+                PLUGIN_ARCHIVE_PATH=$MOODLE_WWW_ROOT$PLUGIN_TYPE/$PLUGIN_BASENAME
+
+                echo "[$(basename $0)] Processing plugin ($COUNTER/$ELEMENTS): $PLUGIN_BASENAME"
+                echo "[$(basename $0)] Plugin type determined to be: $PLUGIN_TYPE"
+                echo "[$(basename $0)] Downloading $PLUGIN_BASENAME from $i..."
+
+                curl -sS "$i" -o $PLUGIN_ARCHIVE_PATH > /dev/null
+
+                echo "[$(basename $0)] Wrote archive to: $PLUGIN_ARCHIVE_PATH"
+
+                echo "[$(basename $0)] Extracting $PLUGIN_BASENAME..."
+                unzip -o $PLUGIN_ARCHIVE_PATH -d $MOODLE_WWW_ROOT$PLUGIN_TYPE > /dev/null
+                rm -f $PLUGIN_ARCHIVE_PATH
+                echo "[$(basename $0)] Removed $PLUGIN_ARCHIVE_PATH"
+
+                echo "[$(basename $0)] Installed plugin $(echo $PLUGIN_BASENAME | awk -F '.' '{print $1}' )"
+        done;
+    echo "[$(basename $0)] Removing unzip..."
+    yum remove unzip > /dev/null
+    echo "[$(basename $0)] Removed unzip."
+else
+    echo "[$(basename $0)] Plugin env array is empty, skipping plugin install..."
+fi
 
 #Setup CRON
 echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx114/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
