@@ -38,9 +38,9 @@ sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIM
 
 #Install plugins, if any
 if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
-	echo "[INFO] Plugins are to be installed, installing unzip..."
-	yum install -y unzip > /dev/null
-	echo "[INFO] installed unzip."
+    echo "[INFO] Plugins are to be installed, installing unzip..."
+    yum install -y unzip > /dev/null
+    echo "[INFO] installed unzip."
         for i in ${PLUGIN_DOWNLOAD_URL_ARRAY[@]}; do
                 ELEMENTS=${#PLUGIN_DOWNLOAD_URL_ARRAY[@]}
                 COUNTER=1
@@ -59,17 +59,17 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
                 echo "[INFO] Extracting $PLUGIN_BASENAME..."
                 unzip -o $PLUGIN_ARCHIVE_PATH -d $MOODLE_WWW_ROOT$PLUGIN_TYPE > /dev/null
                 rm -f $PLUGIN_ARCHIVE_PATH
-		echo "[INFO] Removed $PLUGIN_ARCHIVE_PATH"
+                echo "[INFO] Removed $PLUGIN_ARCHIVE_PATH"
 
                 echo "[INFO] Installed plugin $(echo $PLUGIN_BASENAME | awk -F '.' '{print $1}' )"
 
                 (( COUNTER++ ))
         done;
-	echo "[INFO] Removing unzip..."
-	yum remove unzip > /dev/null
-	echo "[INFO] Removed unzip."
+    echo "[INFO] Removing unzip..."
+    yum remove unzip > /dev/null
+    echo "[INFO] Removed unzip."
 else
-        echo "[INFO] Plugin env array is empty, skipping plugin install..."
+    echo "[INFO] Plugin env array is empty, skipping plugin install..."
 fi
 
 #This is terrible, TODO to actually wait until the DB is up. For now this works but wastes 30 seconds if recreating the container.
