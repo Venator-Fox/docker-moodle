@@ -36,8 +36,8 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
     yum install -y unzip > /dev/null
     echo "[INFO] installed unzip."
         for i in ${PLUGIN_DOWNLOAD_URL_ARRAY[@]}; do
+                (( COUNTER++ ))
                 ELEMENTS=${#PLUGIN_DOWNLOAD_URL_ARRAY[@]}
-                COUNTER=1
                 PLUGIN_BASENAME=$(basename $i)
                 PLUGIN_TYPE=$(echo $PLUGIN_BASENAME | awk -F '_' '{ print $1 }')
                 PLUGIN_ARCHIVE_PATH=$MOODLE_WWW_ROOT$PLUGIN_TYPE/$PLUGIN_BASENAME
@@ -56,8 +56,6 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
                 echo "[INFO] Removed $PLUGIN_ARCHIVE_PATH"
 
                 echo "[INFO] Installed plugin $(echo $PLUGIN_BASENAME | awk -F '.' '{print $1}' )"
-
-                (( COUNTER++ ))
         done;
     echo "[INFO] Removing unzip..."
     yum remove unzip > /dev/null
