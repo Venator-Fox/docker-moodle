@@ -99,21 +99,13 @@ sleep 30;
 
 chown -R nginx:nginx /opt/rh/rh-nginx114/root/usr/share/nginx/html
 
-#Indicates this has already been run, and to only update SSL and RootURL's when recreating the config in the core install.
-if [ -f /var/moodledata/.containersetupdone ]; then
-	echo "[install-moodle.sh] Breadcrumb file exists, Moodle is probably already installed but missing the config. Recreated config. Self-destructing and exiting."
-	sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-	sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-	sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-	sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-	rm -- "$0" && exit 0
-fi
+sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
 
 #Setup CRON
 echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx114/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
-
-#Create a breadcrumb file
-echo "Presence of this file will prevent execution of the docker install-moodle.sh script if the container is recreated." > /var/moodledata/.containersetupdone
 
 #Self Destruct
 echo "[install-moodle.sh] Install complete, self destructing and exiting."
