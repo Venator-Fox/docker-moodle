@@ -2,6 +2,7 @@
 
 Supported tags and respective `Dockerfile` links
 > ~~Depreciated~~ builds are not recommended, as they are EOL.
+> ##### NOTICE: The container [overhaul to CentOS](https://github.com/Venator-Fox/docker-moodle/commit/07a7cd33202a2aff8b04b5647f2b5569ce2003a0) changes the location of `moodledata`. It is now located in `/var/moodledata`. Please update persistent mounts if upgrading. This is as of the `3.7.1` build. Depreciated builds (3.4.1+ and below) use `/var/www/moodledata`.
 
 -   [`3.7.1`, `latest` (*3.7.1/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.7.1%2B/Dockerfile)
 -   ~~[`3.4.1`, (*3.4.1/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.4.1%2B/Dockerfile)~~
@@ -82,7 +83,7 @@ Visit the site at Visit the site at [http://localhost](http://localhost), defaul
 
 See below for available runtime environment variables for a more specific configuration, such as plugin installation.
 
-Volumes can be mounted for the moodledata, postgres data for persistant storage.
+Volumes should be mounted for the moodledata and the database for persistant storage. The `moodledata` directory is located at `/var/moodledata`. Please remember to do this so no data loss occurs! The container should be pulled and re-created as version updates from Moodle occur often.
 
 > The Moodle config.php will be created at run and baked into the Moodle Core Install.
 > Like all of the other Moodle files, the config.php will be ephemeral, please do not edit it directly.
@@ -119,7 +120,7 @@ Ephemeral variables can be changed on existing installations via container rebui
 | MOODLE_ADMINUSER | admin | ------ | FALSE |
 | MOODLE_ADMINPASS | password | ------ | FALSE |
 | MOODLE_ADMINEMAIL | admin@example.com | ------ | FALSE |
-| INSTALL\_PLUGIN\_URLS | | Enter a list of plugin URLS, seperated by spaces. As URL's often change with new versions, it is recommended to host your own instead of downloading them from Moodle. | TRUE |
+| INSTALL\_PLUGIN\_URLS | | Enter a list of plugin URLS, seperated by spaces. As URL's often change with new versions hosted by Moodle, it is recommended to download from Moodle and host internally to ensure they stay available. Do NOT change the `basename` of the URL or filename if doing this. | TRUE |
 
 ### More Complex Examples
 Some more complex (ie. with SSL termination, Plugins, etc...) setup examples are located in the README.md within the [examples directory](https://github.com/Venator-Fox/docker-moodle/tree/master/examples).
