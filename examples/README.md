@@ -134,6 +134,7 @@ docker run --name some-moodle \
            --env PHPFPM_UPLOAD_MAX_FILESIZE=64M \
            --env PHPFPM_POST_MAX_SIZE=64M \
            --env MOODLE_FULLNAME=Some Full Organization Name \
+           --env INSTALL_PLUGIN_URLS=https://moodle.org/plugins/download.php/19164/auth_saml2_moodle35_2019022100.zip https://moodle.org/plugins/download.php/19620/repository_learn360_moodle37_2018110800.zip https://moodle.org/plugins/download.php/19621/filter_learn360_moodle37_2018110800.zip
            --publish 80:80 venatorfox/moodle:3.7.1
 ~~~
 
@@ -147,5 +148,6 @@ ExecStart=/usr/bin/docker run --name some-moodle \
                               --env PHPFPM_UPLOAD_MAX_FILESIZE=64M \
                               --env PHPFPM_POST_MAX_SIZE=64M \
                               --env MOODLE_FULLNAME=Some\x20Full\x20Organization\x20Name \
+                              --env INSTALL_PLUGIN_URLS=https://moodle.org/plugins/download.php/19164/auth_saml2_moodle35_2019022100.zip\x20https://moodle.org/plugins/download.php/19620/repository_learn360_moodle37_2018110800.zip\x20https://moodle.org/plugins/download.php/19621/filter_learn360_moodle37_2018110800.zip \
                               --publish 80:80 venatorfox/moodle:3.7.1
 ~~~
