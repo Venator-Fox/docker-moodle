@@ -121,7 +121,7 @@ When translating docker run into systemd unit files, be sure to use `systemd-esc
 
 ~~~
 systemd-escape 'Something with spaces'
-Something\x20with\x20spaces\x21
+Something\x20with\x20spaces
 ~~~
 
 For Example:
