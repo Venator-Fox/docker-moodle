@@ -52,7 +52,7 @@ case ${MOODLE_DBTYPE,,} in
         echo "[$(basename $0)] Waiting until mysql is ready... "
         until mysqladmin ping -h"$MOODLE_DBHOST" -P$MOODLE_DBPORT -u$MOODLE_DBUSER -p$MOODLE_DBPASS &> /dev/null; do
             (( ATTEMPT++ ))
-            echo "[$(basename $0)] Waiting until mysql is ready ($ATTEMPT)... connect to server at 'some-mysql' failed"
+            echo "[$(basename $0)] Waiting until mysql is ready ($ATTEMPT)... connect to server at $MOODLE_DBHOST failed"
             sleep 1;
         done;
         echo "[$(basename $0)] Database is ready, removing mysql client tools..."
