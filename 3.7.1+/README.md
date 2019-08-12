@@ -23,7 +23,7 @@ docker network create moodle-network
 
 Start a `postgres` server instance from the official postgres repository
 
-| If `mysql` is desired, use the 2nd example below.
+| If `mysql` is desired, use the 2nd example further below.
 
 ```console
 docker run --rm -d --name moodle-postgres \
@@ -47,7 +47,7 @@ docker run --rm -d --name some-moodle \
 ##### MySQL Variant
 
 Example: Same thing as above, but for mySQL instead of Postgres.
-Postgres is however recommended as per [Moodle docs](https://docs.moodle.org/37/en/Arguments_in_favour_of_PostgreSQL).
+Postgres is however recommended as per [Moodle docs](https://docs.moodle.org/37/en/Arguments_in_favour_of_PostgreSQL). Please note that brand new installs of MySQL 8 will require a [workaround](https://www.google.com/search?rls=en&q=authentication+method+unknown+to+the+client&ie=UTF-8&oe=UTF-8) to avoid authentication issues. Upgrades from MySQL 5 to 8 carries over the workaround.
 
 Create a docker network `moodle-network`
 
@@ -62,7 +62,7 @@ docker run --rm -d --name moodle-mysql \
            --env MYSQL_USER=moodle \
            --env MYSQL_PASSWORD=moodle -env \
            --MYSQL_DATABASE=moodle \
-           mysql:latest
+           mysql:5.7.27
 ```
 
 Then start a `venatorfox/moodle` instance, change dbtype settings, expose port 80.
@@ -75,7 +75,7 @@ docker run --rm -d --name some-moodle \
            --env MOODLE_DBHOST=moodle-mysql \
            --env MOODLE_DBPORT=3306 \
            --publish 80:80 \
-           venatorfox/moodle:latest
+           venatorfox/moodle:3.7.1
 ```
 
 If this is a new db install, grab some covfefe and wait until the webserver starts (indicated by `[services.d] done` in the log).
