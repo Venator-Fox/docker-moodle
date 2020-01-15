@@ -1,4 +1,4 @@
-[![](https://images.microbadger.com/badges/version/venatorfox/moodle:MOODLE_37_STABLE.svg)](http://git.moodle.org/gw?p=moodle.git;a=tree;hb=refs/heads/MOODLE_37_STABLE "MOODLE_37_STABLE") [![](https://images.microbadger.com/badges/image/venatorfox/moodle:MOODLE_37_STABLE.svg)](https://microbadger.com/images/venatorfox/moodle "View image metadata on MicroBadger") [![Pulls on Docker Hub](https://img.shields.io/docker/pulls/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle)  [![Stars on Docker Hub](https://img.shields.io/docker/stars/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle) [![GitHub Open Issues](https://img.shields.io/github/issues/Venator-Fox/docker-moodle.svg)](https://github.com/Venator-Fox/docker-moodle/issues) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![](https://images.microbadger.com/badges/version/venatorfox/moodle:MOODLE_38_STABLE.svg)](http://git.moodle.org/gw?p=moodle.git;a=tree;hb=refs/heads/MOODLE_38_STABLE "MOODLE_38_STABLE") [![](https://images.microbadger.com/badges/image/venatorfox/moodle:MOODLE_38_STABLE.svg)](https://microbadger.com/images/venatorfox/moodle "View image metadata on MicroBadger") [![Pulls on Docker Hub](https://img.shields.io/docker/pulls/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle)  [![Stars on Docker Hub](https://img.shields.io/docker/stars/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle) [![GitHub Open Issues](https://img.shields.io/github/issues/Venator-Fox/docker-moodle.svg)](https://github.com/Venator-Fox/docker-moodle/issues) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ### Examples
 
@@ -135,7 +135,7 @@ docker run --name some-moodle \
            --env PHPFPM_POST_MAX_SIZE=64M \
            --env MOODLE_FULLNAME=Some Full Organization Name \
            --env INSTALL_PLUGIN_URLS=https://moodle.org/plugins/download.php/19164/auth_saml2_moodle35_2019022100.zip https://moodle.org/plugins/download.php/19620/repository_learn360_moodle37_2018110800.zip https://moodle.org/plugins/download.php/19621/filter_learn360_moodle37_2018110800.zip
-           --publish 80:80 venatorfox/moodle:MOODLE_37_STABLE
+           --publish 80:80 venatorfox/moodle:MOODLE_38_STABLE
 ~~~
 
 Would look like this in a unit file
@@ -149,5 +149,5 @@ ExecStart=/usr/bin/docker run --name some-moodle \
                               --env PHPFPM_POST_MAX_SIZE=64M \
                               --env MOODLE_FULLNAME=Some\x20Full\x20Organization\x20Name \
                               --env INSTALL_PLUGIN_URLS=https://moodle.org/plugins/download.php/19164/auth_saml2_moodle35_2019022100.zip\x20https://moodle.org/plugins/download.php/19620/repository_learn360_moodle37_2018110800.zip\x20https://moodle.org/plugins/download.php/19621/filter_learn360_moodle37_2018110800.zip \
-                              --publish 80:80 venatorfox/moodle:MOODLE_37_STABLE
+                              --publish 80:80 venatorfox/moodle:MOODLE_38_STABLE
 ~~~

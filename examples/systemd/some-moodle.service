@@ -8,7 +8,7 @@ TimeoutStartSec=0
 Restart=always
 ExecStartPre=-/usr/bin/docker stop %N
 ExecStartPre=-/usr/bin/docker rm %N
-ExecStartPre=/usr/bin/docker pull venatorfox/moodle:MOODLE_37_STABLE
+ExecStartPre=/usr/bin/docker pull venatorfox/moodle:MOODLE_38_STABLE
 ExecStart=/usr/bin/docker run -t --rm --name %N \
                                  --network moodle-network \
                                  --env NGINX_MAX_BODY_SIZE=64M \
@@ -29,7 +29,7 @@ ExecStart=/usr/bin/docker run -t --rm --name %N \
                                  --env MOODLE_ADMINEMAIL=adam.w.zheng@icloud.com \
                                  --env INSTALL_PLUGIN_URLS=https://moodle.org/plugins/download.php/19164/auth_saml2_moodle35_2019022100.zip\x20https://moodle.org/plugins/download.php/19871/theme_adaptable_moodle37_2019062800.zip \
                                  --volume /srv/docker/volumes/%N/moodledata/:/var/moodledata/:Z \
-                                 venatorfox/moodle:MOODLE_37_STABLE
+                                 venatorfox/moodle:MOODLE_38_STABLE
 ExecStop=/usr/bin/docker stop %N
 
 [Install]
