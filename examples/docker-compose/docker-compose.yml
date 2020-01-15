@@ -24,7 +24,7 @@ services:
     container_name: some-moodle
     depends_on:
       - moodle-postgres
-    image: venatorfox/moodle:3.7.1
+    image: venatorfox/moodle:MOODLE_37_STABLE
     environment:
       - NGINX_MAX_BODY_SIZE=256M
       - PHPFPM_UPLOAD_MAX_FILESIZE=256M

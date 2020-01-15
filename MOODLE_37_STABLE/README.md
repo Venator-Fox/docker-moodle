@@ -1,13 +1,13 @@
-[![](https://images.microbadger.com/badges/version/venatorfox/moodle:3.7.1.svg)](http://git.moodle.org/gw?p=moodle.git;a=tree;hb=refs/heads/MOODLE_37_STABLE "MOODLE_37_STABLE (3.7.1+)") [![](https://images.microbadger.com/badges/image/venatorfox/moodle:3.7.1.svg)](https://microbadger.com/images/venatorfox/moodle "View image metadata on MicroBadger") [![Pulls on Docker Hub](https://img.shields.io/docker/pulls/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle)  [![Stars on Docker Hub](https://img.shields.io/docker/stars/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle) [![GitHub Open Issues](https://img.shields.io/github/issues/Venator-Fox/docker-moodle.svg)](https://github.com/Venator-Fox/docker-moodle/issues) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![](https://images.microbadger.com/badges/version/venatorfox/moodle:MOODLE_37_STABLE.svg)](http://git.moodle.org/gw?p=moodle.git;a=tree;hb=refs/heads/MOODLE_37_STABLE "MOODLE_37_STABLE") [![](https://images.microbadger.com/badges/image/venatorfox/moodle:MOODLE_37_STABLE.svg)](https://microbadger.com/images/venatorfox/moodle "View image metadata on MicroBadger") [![Pulls on Docker Hub](https://img.shields.io/docker/pulls/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle)  [![Stars on Docker Hub](https://img.shields.io/docker/stars/venatorfox/moodle.svg)](https://hub.docker.com/r/venatorfox/moodle) [![GitHub Open Issues](https://img.shields.io/github/issues/Venator-Fox/docker-moodle.svg)](https://github.com/Venator-Fox/docker-moodle/issues) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Supported tags and respective `Dockerfile` links
 > ~~Depreciated~~ builds are not recommended, as they are EOL.
-> ##### NOTICE: The container [overhaul to CentOS](https://github.com/Venator-Fox/docker-moodle/commit/07a7cd33202a2aff8b04b5647f2b5569ce2003a0) changes the location of `moodledata`. It is now located in `/var/moodledata`. Please update persistent mounts if upgrading. This is as of the `3.7.1` build. Depreciated builds (3.4.1+ and below) use `/var/www/moodledata`.
+> ##### NOTICE: The container [overhaul to CentOS](https://github.com/Venator-Fox/docker-moodle/commit/07a7cd33202a2aff8b04b5647f2b5569ce2003a0) changes the location of `moodledata`. It is now located in `/var/moodledata`. Please update persistent mounts if upgrading. This is as of the `MOODLE_37_STABLE` build. Depreciated builds (3.4.1+ and below) use `/var/www/moodledata`.
 
--   [`3.7.1`, `latest` (*3.7.1/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.7.1%2B/Dockerfile)
--   ~~[`3.4.1`, (*3.4.1/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.4.1%2B/Dockerfile)~~
--   ~~[`3.3.4`, (*3.3.4/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.3.4%2B/Dockerfile)~~
--   ~~[`3.0.10`, (*3.0.10/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/3.0.10/Dockerfile)~~
+-   [`MOODLE_37_STABLE`, `latest` (*MOODLE\_37\_STABLE/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/MOODLE_37_STABLE/Dockerfile)
+-   ~~[`3.4.1`, (*3.4.1/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/84304322fa2a656893e469a4c5903b8028055b77/3.4.1%2B/Dockerfile)~~
+-   ~~[`3.3.4`, (*3.3.4/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/84304322fa2a656893e469a4c5903b8028055b77/3.3.4%2B/Dockerfile)~~
+-   ~~[`3.0.10`, (*3.0.10/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/84304322fa2a656893e469a4c5903b8028055b77/3.0.10/Dockerfile)~~
 
 Now with plugin support via `docker -e`!
 
@@ -41,7 +41,7 @@ docker run --rm -d --name some-moodle \
            --network moodle-network \
            --env MOODLE_WWWROOT=http://localhost \
            --publish 80:80 \
-           venatorfox/moodle:3.7.1
+           venatorfox/moodle:MOODLE_37_STABLE
 ```
 
 ##### MySQL Variant
@@ -75,7 +75,7 @@ docker run --rm -d --name some-moodle \
            --env MOODLE_DBHOST=moodle-mysql \
            --env MOODLE_DBPORT=3306 \
            --publish 80:80 \
-           venatorfox/moodle:3.7.1
+           venatorfox/moodle:MOODLE_37_STABLE
 ```
 
 If this is a new db install, grab some covfefe and wait until the webserver starts (indicated by `[services.d] done` in the log).
