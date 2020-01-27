@@ -6,6 +6,8 @@ NGINX_MAX_BODY_SIZE=${NGINX_MAX_BODY_SIZE:='1M'}
 PHPFPM_UPLOAD_MAX_FILESIZE=${PHPFPM_UPLOAD_MAX_FILESIZE:='2M'}
 PHPFPM_POST_MAX_SIZE=${PHPFPM_POST_MAX_SIZE:='8M'}
 PHPFPM_MAX_EXECUTION_TIME=${PHPFPM_MAX_EXECUTION_TIME:='30'}
+PHPFPM_OPCACHE_MEMORY_CONSUMPTION=${PHPFPM_OPCACHE_MEMORY_CONSUMPTION:='128'}
+PHPFPM_OPCACHE_MAX_ACCELERATED_FILES=${PHPFPM_OPCACHE_MAX_ACCELERATED_FILES:='4000'}
 
 CRON_MOODLE_INTERVAL=${CRON_MOODLE_INTERVAL:='15'}
 
@@ -43,46 +45,43 @@ MOODLE_ADMINEMAIL=${MOODLE_ADMINEMAIL:='support@example.com'}
 INSTALL_PLUGIN_URLS=${INSTALL_PLUGIN_URLS:=}
 
 PLUGIN_DOWNLOAD_URL_ARRAY=($INSTALL_PLUGIN_URLS)
-MOODLE_WWW_ROOT=/opt/rh/rh-nginx114/root/usr/share/nginx/html/
+MOODLE_WWW_ROOT=/opt/rh/rh-nginx116/root/usr/share/nginx/html/
 
 case ${MOODLE_DBTYPE,,} in
     pgsql)  
-        echo "[$(basename $0)] Database type is pgsql, installing pgsql client tools..."
-        yum install -y rh-postgresql10-postgresql-syspaths > /dev/null
-        echo "[$(basename $0)] Installed client tools."
+        echo "[$(basename $0)] Database type is pgsql."
         printf "[$(basename $0)] Waiting until postgres is ready... "
         until pg_isready -h $MOODLE_DBHOST -p $MOODLE_DBPORT; do
             (( ATTEMPT++ ))
             printf "[$(basename $0)] Waiting until postgres is ready ($ATTEMPT)... "
             sleep 1;
         done;
-        echo "[$(basename $0)] Database is ready, removing pgsql client tools..."
-        yum remove -y rh-postgresql10-postgresql rh-postgresql10-postgresql-libs rh-postgresql10-runtime > /dev/null
-        echo "[$(basename $0)] Finished removing packages."
+        echo "[$(basename $0)] Database is ready."
         ;;
     mysqli)
-        echo "[$(basename $0)] Database type is mysqli, install mysql client tools..."
+        echo "[$(basename $0)] Database type is mysqli."
         yum install -y rh-mysql80-mysql-syspaths > /dev/null
-        echo "[$(basename $0)] Installed client tools."
         echo "[$(basename $0)] Waiting until mysql is ready... "
         until mysqladmin ping -h"$MOODLE_DBHOST" -P$MOODLE_DBPORT -u$MOODLE_DBUSER -p$MOODLE_DBPASS &> /dev/null; do
             (( ATTEMPT++ ))
             echo "[$(basename $0)] Waiting until mysql is ready ($ATTEMPT)... connect to server at $MOODLE_DBHOST failed"
             sleep 1;
         done;
-        echo "[$(basename $0)] Database is ready, removing mysql client tools..."
-        yum remove -y rh-mysql80-lz4 rh-mysql80-mysql rh-mysql80-mysql-common rh-mysql80-mysql-config rh-mysql80-runtime > /dev/null
-        echo "[$(basename $0)] Finished removing packages."
+        echo "[$(basename $0)] Database is ready."
         ;;
     *)      
         >&2 echo "[$(basename $0)] Invalid \$MOODLE_DBTYPE $MOODLE_DBTYPE. Supported options are pgsql or mysqli."
         ;;
 esac
 
+echo "[$(basename $0)] Removing database client packages..."
+yum remove -y rh-postgresql10-postgresql rh-postgresql10-postgresql-libs rh-postgresql10-runtime rh-mysql80-lz4 rh-mysql80-mysql rh-mysql80-mysql-common rh-mysql80-mysql-config rh-mysql80-runtime > /dev/null
+echo "[$(basename $0)] Finished removing packages."
+
 echo "[$(basename $0)] Starting Moodle CLI installer if database tables are empty..."
 
 #Moodle CLI to install Moodle with runtime variables
-/opt/rh/rh-php72/root/usr/bin/php /opt/rh/rh-nginx114/root/usr/share/nginx/html/admin/cli/install.php \
+/opt/rh/rh-php73/root/usr/bin/php /opt/rh/rh-nginx116/root/usr/share/nginx/html/admin/cli/install.php \
   --chmod=2777 \
   --lang=$MOODLE_LANG \
   --wwwroot=$MOODLE_WWWROOT \
@@ -105,11 +104,7 @@ echo "[$(basename $0)] Starting Moodle CLI installer if database tables are empt
 
 echo "[$(basename $0)] Process complete."
 
-echo "[$(basename $0)] Setting ownership..."
-chown -R nginx:nginx /opt/rh/rh-nginx114/root/usr/share/nginx/html
-echo "[$(basename $0)] Done setting ownership..."
-
-if [ ! -f "/opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php" ]; then
+if [ ! -f "/opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php" ]; then
     >&2 echo "[$(basename $0)] Something horrible has happened, config.php is missing. Check container logs to see if the Moodle CLI utility returned errors, I need to die now. Goodbye."
  kill -15 1
  sleep infinity
@@ -117,25 +112,32 @@ fi
 
 #Set ephemeral configs
 echo "[$(basename $0)] Setting ephemeral values in config.php..."
-sed -i "/types_hash_max_size 2048;/a \    client_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx114/nginx/nginx.conf
-sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/opt/rh/rh-php72/php.ini
-sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/opt/rh/rh-php72/php.ini
-sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/opt/rh/rh-php72/php.ini
-sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+sed -i "/types_hash_max_size 2048;/a \    client_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
+sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/opt/rh/rh-php73/php.ini
+sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/opt/rh/rh-php73/php.ini
+sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/opt/rh/rh-php73/php.ini
+sed -i "s/opcache.memory_consumption=128/opcache.memory_consumption=$PHPFPM_OPCACHE_MEMORY_CONSUMPTION/g" /opt/rh/rh-php73/register.content/etc/opt/rh/rh-php73/php.d/10-opcache.ini
+sed -i "s/opcache.max_accelerated_files=4000/opcache.max_accelerated_files=$PHPFPM_OPCACHE_MAX_ACCELERATED_FILES/g" /opt/rh/rh-php73/register.content/etc/opt/rh/rh-php73/php.d/10-opcache.ini
+sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 
-sed -i "/\\\*reverseproxy\\\*/a\\\\n\$CFG->session_handler_class = '\\\core\\\session\\\\$MOODLECFG_SESSION_HANDLER_CLASS';" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+sed -i "/\\\*reverseproxy\\\*/a\\\\n\$CFG->session_handler_class = '\\\core\\\session\\\\$MOODLECFG_SESSION_HANDLER_CLASS';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 
 #Only set ephemeral memcached config if session handler is memcached
 if [ "$MOODLECFG_SESSION_HANDLER_CLASS" = "memcached" ]; then
     echo "[$(basename $0)] Session handler type env var is memcached. Inserting memcached configs..."
-    sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_memcached_save_path = '$MOODLECFG_SESSION_MEMCACHED_SAVE_PATH';" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*memcached_save_path\\\*/a\$CFG->session_memcached_prefix = '$MOODLECFG_SESSION_MEMCACHED_PREFIX';" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*memcached_prefix\\\*/a\$CFG->session_memcached_acquire_lock_timeout = $MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+    sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_memcached_save_path = '$MOODLECFG_SESSION_MEMCACHED_SAVE_PATH';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*memcached_save_path\\\*/a\$CFG->session_memcached_prefix = '$MOODLECFG_SESSION_MEMCACHED_PREFIX';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*memcached_prefix\\\*/a\$CFG->session_memcached_acquire_lock_timeout = $MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
     echo "[$(basename $0)] Completed memcached configuration."
+
+    echo "[$(basename $0)] Removing unneeded php extensions..."
+    yum remove -y sclo-php73-php-pecl-redis5 > /dev/null
+    echo "[$(basename $0)] Finished removing packages."
+
 else
     echo "[$(basename $0)] Session type env var is not memcached, skipping memcached configuration..."
 fi
@@ -143,17 +145,24 @@ fi
 #Only set ephemeral redis config if session handler is redis
 if [ "$MOODLECFG_SESSION_HANDLER_CLASS" = "redis" ]; then
     echo "[$(basename $0)] Session handler type env var is redis. Inserting redis configs..."
-    sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_redis_host = '$MOODLECFG_SESSION_REDIS_HOST';" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*redis_host\\\*/a\$CFG->session_redis_port = $MOODLECFG_SESSION_REDIS_PORT;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*redis_port\\\*/a\$CFG->session_redis_database = $MOODLECFG_SESSION_REDIS_DATABASE;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*redis_database\\\*/a\$CFG->session_redis_prefix = '$MOODLECFG_SESSION_REDIS_PREFIX';" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*redis_prefix\\\*/a\$CFG->session_redis_acquire_lock_timeout = $MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*session_redis_acquire_lock_timeout\\\*/a\$CFG->session_redis_lock_expire = $MOODLECFG_SESSION_REDIS_LOCK_EXPIRE;" /opt/rh/rh-nginx114/root/usr/share/nginx/html/config.php
+    sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_redis_host = '$MOODLECFG_SESSION_REDIS_HOST';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*redis_host\\\*/a\$CFG->session_redis_port = $MOODLECFG_SESSION_REDIS_PORT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*redis_port\\\*/a\$CFG->session_redis_database = $MOODLECFG_SESSION_REDIS_DATABASE;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*redis_database\\\*/a\$CFG->session_redis_prefix = '$MOODLECFG_SESSION_REDIS_PREFIX';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*redis_prefix\\\*/a\$CFG->session_redis_acquire_lock_timeout = $MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+    sed -i "/\\\*session_redis_acquire_lock_timeout\\\*/a\$CFG->session_redis_lock_expire = $MOODLECFG_SESSION_REDIS_LOCK_EXPIRE;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
     echo "[$(basename $0)] Completed redis configuration."
+
+    echo "[$(basename $0)] Removing unneeded php extensions..."
+    yum remove -y sclo-php73-php-pecl-memcached > /dev/null
+    echo "[$(basename $0)] Finished removing packages."
+
 else
     echo "[$(basename $0)] Session type env var is not redis, skipping redis configuration..."
 fi
+
+chown nginx:nginx /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 
 echo "[$(basename $0)] Done setting values in config.php."
 
@@ -192,7 +201,12 @@ else
 fi
 
 #Setup CRON
-echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx114/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
+echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx116/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
+
+#Remove git
+echo "[$(basename $0)] Removing unneeded script packages..."
+yum remove -y fipscheck groff-base libedit openssh rsync > /dev/null
+echo "[$(basename $0)] Finished removing packages."
 
 #Self Destruct
 echo "[$(basename $0)] Install complete, self destructing and exiting."
