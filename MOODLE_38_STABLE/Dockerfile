@@ -3,6 +3,7 @@ LABEL maintainer="Adam W Zheng <adam.w.zheng@icloud.com>"
 
 ENV S6_RELEASE 1.22.1.0
 ENV MOODLE_RELEASE MOODLE_38_STABLE
+WORKDIR /opt/rh/rh-nginx114/root/usr/share/nginx/html/
 
 #Add s6-overlay
 ADD https://github.com/just-containers/s6-overlay/releases/download/v$S6_RELEASE/s6-overlay-amd64.tar.gz /tmp/
@@ -11,7 +12,7 @@ RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" \
 
 #Install moodle requirements
 RUN yum -y install centos-release-scl \
- && yum -y install rh-nginx114 rh-php72 rh-php72-php-fpm rh-php72-php-xml rh-php72-php-pgsql rh-php72-php-mysqlnd rh-php72-php-curl rh-php72-php-zip rh-php72-php-gd rh-php72-php-mbstring rh-php72-php-xmlrpc rh-php72-php-soap rh-php72-php-intl sclo-php72-php-pecl-memcached git cronie \
+ && yum -y install rh-nginx114 rh-php72 rh-php72-php-fpm rh-php72-php-xml rh-php72-php-pgsql rh-php72-php-mysqlnd rh-php72-php-curl rh-php72-php-zip rh-php72-php-gd rh-php72-php-mbstring rh-php72-php-xmlrpc rh-php72-php-soap rh-php72-php-intl sclo-php72-php-pecl-memcached sclo-php72-php-pecl-redis5 git cronie \
  && sed -i 's/user = apache/user = nginx/' /etc/opt/rh/rh-php72/php-fpm.d/www.conf \
  && sed -i 's/group = apache/group = nginx/' /etc/opt/rh/rh-php72/php-fpm.d/www.conf
 
