@@ -12,7 +12,7 @@ RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" \
 
 #Install moodle requirements
 RUN yum -y install centos-release-scl \
- && yum -y install rh-nginx116 rh-php73 rh-php73-php-fpm rh-php73-php-xml rh-php73-php-pgsql rh-php73-php-mysqlnd rh-php73-php-curl rh-php73-php-zip rh-php73-php-gd rh-php73-php-mbstring rh-php73-php-xmlrpc rh-php73-php-soap rh-php73-php-intl rh-php73-php-opcache sclo-php73-php-pecl-memcached sclo-php73-php-pecl-redis5 rh-postgresql10-postgresql-syspaths rh-mysql80-mysql-syspaths git cronie openssl \
+ && yum -y install rh-nginx116 rh-php73 rh-php73-php-fpm rh-php73-php-xml rh-php73-php-pgsql rh-php73-php-mysqlnd rh-php73-php-curl rh-php73-php-zip rh-php73-php-gd rh-php73-php-mbstring rh-php73-php-xmlrpc rh-php73-php-soap rh-php73-php-intl rh-php73-php-opcache sclo-php73-php-pecl-memcached sclo-php73-php-pecl-redis5 rh-postgresql10-postgresql-syspaths rh-mysql80-mysql-syspaths git cronie openssl unzip \
  && sed -i 's/user = apache/user = nginx/' /etc/opt/rh/rh-php73/php-fpm.d/www.conf \
  && sed -i 's/group = apache/group = nginx/' /etc/opt/rh/rh-php73/php-fpm.d/www.conf
 
