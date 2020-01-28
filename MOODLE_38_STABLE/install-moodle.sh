@@ -107,12 +107,6 @@ echo "[$(basename $0)] Starting Moodle CLI installer if database tables are empt
 
 echo "[$(basename $0)] Process complete."
 
-if [ ! -f "/opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php" ]; then
-    >&2 echo "[$(basename $0)] Something horrible has happened, config.php is missing. Check container logs to see if the Moodle CLI utility returned errors, I need to die now. Goodbye."
- kill -15 1
- sleep infinity
-fi
-
 #Set ephemeral configs
 echo "[$(basename $0)] Setting ephemeral values in config.php..."
 sed -i "/types_hash_max_size 2048;/a \    client_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
@@ -168,40 +162,111 @@ else
     echo "[$(basename $0)] Session type env var is not redis, skipping redis configuration..."
 fi
 
-chown nginx:nginx /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-
 echo "[$(basename $0)] Done setting values in config.php."
+
+#Snakeoil
+echo "[$(basename $0)] Generating keys..."
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout /etc/opt/rh/rh-nginx116/nginx/cert.key -out /etc/opt/rh/rh-nginx116/nginx/cert.pem -subj "/CN=$(hostname)" &> /dev/null
+echo "[$(basename $0)] Done generating keys."
+
+echo "[$(basename $0)] Set ownership..."
+chown nginx:nginx /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+echo "[$(basename $0)] Done setting ownership..."
 
 #Install plugins, if any
 if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
-    echo "[$(basename $0)] Plugins are to be installed, installing unzip..."
-    yum install -y unzip > /dev/null
-    echo "[$(basename $0)] installed unzip."
-        for i in ${PLUGIN_DOWNLOAD_URL_ARRAY[@]}; do
-                (( COUNTER++ ))
-                ELEMENTS=${#PLUGIN_DOWNLOAD_URL_ARRAY[@]}
-                PLUGIN_BASENAME=$(basename $i)
-                PLUGIN_TYPE=$(echo $PLUGIN_BASENAME | awk -F '_' '{ print $1 }')
-                PLUGIN_ARCHIVE_PATH=$MOODLE_WWW_ROOT$PLUGIN_TYPE/$PLUGIN_BASENAME
 
-                echo "[$(basename $0)] Processing plugin ($COUNTER/$ELEMENTS): $PLUGIN_BASENAME"
-                echo "[$(basename $0)] Plugin type determined to be: $PLUGIN_TYPE"
-                echo "[$(basename $0)] Downloading $PLUGIN_BASENAME from $i..."
+    echo "[$(basename $0)] Plugins are to be installed..."
 
-                curl -sS "$i" -o $PLUGIN_ARCHIVE_PATH > /dev/null
+    declare -A PLUGIN_TYPE_MAP
+    PLUGIN_TYPE_MAP["mod"]="mod/"
+    PLUGIN_TYPE_MAP["antivirus"]="lib/antivirus/"
+    PLUGIN_TYPE_MAP["assignsubmission"]="mod/assign/submission/"
+    PLUGIN_TYPE_MAP["assignfeedback"]="mod/assign/feedback/"
+    PLUGIN_TYPE_MAP["booktool"]="mod/book/tool/"
+    PLUGIN_TYPE_MAP["datafield"]="mod/data/field/"
+    PLUGIN_TYPE_MAP["datapreset"]="mod/data/preset/"
+    PLUGIN_TYPE_MAP["ltisource"]="mod/lti/source/"
+    PLUGIN_TYPE_MAP["fileconverter"]="files/converter/"
+    PLUGIN_TYPE_MAP["ltiservice"]="mod/lti/service/"
+    PLUGIN_TYPE_MAP["mlbackend"]="lib/mlbackend/"
+    PLUGIN_TYPE_MAP["quiz"]="mod/quiz/report/"
+    PLUGIN_TYPE_MAP["quizaccess"]="mod/quiz/accessrule/"
+    PLUGIN_TYPE_MAP["scormreport"]="mod/scorm/report/"
+    PLUGIN_TYPE_MAP["workshopform"]="mod/workshop/form/"
+    PLUGIN_TYPE_MAP["workshopallocation"]="mod/workshop/allocation/"
+    PLUGIN_TYPE_MAP["workshopeval"]="mod/workshop/eval/"
+    PLUGIN_TYPE_MAP["block"]="blocks/"
+    PLUGIN_TYPE_MAP["qtype"]="question/type/"
+    PLUGIN_TYPE_MAP["qbehaviour"]="question/behaviour/"
+    PLUGIN_TYPE_MAP["qformat"]="question/format/"
+    PLUGIN_TYPE_MAP["filter"]="filter/"
+    PLUGIN_TYPE_MAP["editor"]="lib/editor/"
+    PLUGIN_TYPE_MAP["atto"]="lib/editor/atto/plugins/"
+    PLUGIN_TYPE_MAP["tinymce"]="lib/editor/tinymce/plugins/"
+    PLUGIN_TYPE_MAP["enrol"]="enrol/"
+    PLUGIN_TYPE_MAP["auth"]="auth/"
+    PLUGIN_TYPE_MAP["tool"]="admin/tool/"
+    PLUGIN_TYPE_MAP["logstore"]="admin/tool/log/store/"
+    PLUGIN_TYPE_MAP["availability"]="availability/condition/"
+    PLUGIN_TYPE_MAP["calendartype"]="calendar/type/"
+    PLUGIN_TYPE_MAP["message"]="message/output/"
+    PLUGIN_TYPE_MAP["format"]="course/format/"
+    PLUGIN_TYPE_MAP["dataformat"]="dataformat/"
+    PLUGIN_TYPE_MAP["profilefield"]="user/profile/field/"
+    PLUGIN_TYPE_MAP["report"]="report/"
+    PLUGIN_TYPE_MAP["coursereport"]="course/report/"
+    PLUGIN_TYPE_MAP["gradeexport"]="grade/export/"
+    PLUGIN_TYPE_MAP["gradeimport"]="grade/import/"
+    PLUGIN_TYPE_MAP["gradereport"]="grade/report/"
+    PLUGIN_TYPE_MAP["gradingform"]="grade/grading/form/"
+    PLUGIN_TYPE_MAP["mnetservice"]="mnet/service/"
+    PLUGIN_TYPE_MAP["webservice"]="webservice/"
+    PLUGIN_TYPE_MAP["repository"]="repository/"
+    PLUGIN_TYPE_MAP["portfolio"]="portfolio/"
+    PLUGIN_TYPE_MAP["search"]="search/engine/"
+    PLUGIN_TYPE_MAP["media"]="media/player/"
+    PLUGIN_TYPE_MAP["plagiarism"]="plagiarism/"
+    PLUGIN_TYPE_MAP["cachestore"]="cache/stores/"
+    PLUGIN_TYPE_MAP["cachelock"]="cache/locks/"
+    PLUGIN_TYPE_MAP["theme"]="theme/"
+    PLUGIN_TYPE_MAP["local"]="local/"
+    PLUGIN_TYPE_MAP["assignment"]="mod/assignment/type/"
+    PLUGIN_TYPE_MAP["report"]="admin/report/"
 
-                echo "[$(basename $0)] Wrote archive to: $PLUGIN_ARCHIVE_PATH"
+    for i in ${PLUGIN_DOWNLOAD_URL_ARRAY[@]}; do
+        (( COUNTER++ ))
+        ELEMENTS=${#PLUGIN_DOWNLOAD_URL_ARRAY[@]}
+        PLUGIN_BASENAME=$(basename $i)
+        PLUGIN_TYPE_COMPONENT=$(echo $PLUGIN_BASENAME | awk -F '_' '{ print $1 }')
+        PLUGIN_TYPE_PATH=${PLUGIN_TYPE_MAP["$PLUGIN_TYPE_COMPONENT"]}
 
-                echo "[$(basename $0)] Extracting $PLUGIN_BASENAME..."
-                unzip -o $PLUGIN_ARCHIVE_PATH -d $MOODLE_WWW_ROOT$PLUGIN_TYPE > /dev/null
-                rm -f $PLUGIN_ARCHIVE_PATH
-                echo "[$(basename $0)] Removed $PLUGIN_ARCHIVE_PATH"
+        PLUGIN_ARCHIVE_PATH=$MOODLE_WWW_ROOT$PLUGIN_TYPE_PATH$PLUGIN_BASENAME
 
-                echo "[$(basename $0)] Installed plugin $(echo $PLUGIN_BASENAME | awk -F '.' '{print $1}' )"
-        done;
-    echo "[$(basename $0)] Removing unzip..."
-    yum remove unzip > /dev/null
-    echo "[$(basename $0)] Removed unzip."
+        echo "[$(basename $0)] Processing plugin ($COUNTER/$ELEMENTS): $PLUGIN_BASENAME"
+
+        echo "[$(basename $0)] Determine plugin component name..."
+        if [ -n "${PLUGIN_TYPE_MAP[$PLUGIN_TYPE_COMPONENT] + 1}" ]; then
+            echo "[$(basename $0)] Plugin component name determined to be: $PLUGIN_TYPE_COMPONENT"
+        else
+            >&2 echo "[$(basename $0)] Unable to determine plugin component name. Something horrible has happened, please double check the URL and previous errors if any. Submit an issue with logs if needed. I need to die now. Goodbye.";
+            kill -15 1; exit 10
+        fi
+
+        echo "[$(basename $0)] Plugin archive path determined to be: $PLUGIN_ARCHIVE_PATH"
+        echo "[$(basename $0)] Downloading $PLUGIN_BASENAME from $i..."
+
+        curl -sS "$i" -o $PLUGIN_ARCHIVE_PATH > /dev/null
+        echo "[$(basename $0)] Wrote archive to: $PLUGIN_ARCHIVE_PATH"
+
+        echo "[$(basename $0)] Extracting $PLUGIN_BASENAME to $MOODLE_WWW_ROOT$PLUGIN_TYPE_PATH"
+        unzip -o $PLUGIN_ARCHIVE_PATH -d $MOODLE_WWW_ROOT$PLUGIN_TYPE_PATH > /dev/null
+
+        rm -f $PLUGIN_ARCHIVE_PATH
+        echo "[$(basename $0)] Removed $PLUGIN_ARCHIVE_PATH"
+
+        echo -e "[$(basename $0)] Installed plugin $(echo $PLUGIN_BASENAME | awk -F '.' '{print $1}' )\n"
+    done;
 else
     echo "[$(basename $0)] Plugin env array is empty, skipping plugin install..."
 fi
@@ -209,14 +274,9 @@ fi
 #Setup CRON
 echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx116/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
 
-#Snakeoil
-echo "[$(basename $0)] Generating keys..."
-openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout /etc/opt/rh/rh-nginx116/nginx/cert.key -out /etc/opt/rh/rh-nginx116/nginx/cert.pem -subj "/CN=$(hostname)" &> /dev/null
-echo "[$(basename $0)] Done generating keys."
-
-#Remove git, openssl
+#Remove git, openssl, unzip
 echo "[$(basename $0)] Removing unneeded script packages..."
-yum remove -y fipscheck groff-base libedit openssh rsync make > /dev/null
+yum remove -y fipscheck groff-base libedit openssh rsync make unzip > /dev/null
 echo "[$(basename $0)] Finished removing packages."
 
 #Self Destruct
