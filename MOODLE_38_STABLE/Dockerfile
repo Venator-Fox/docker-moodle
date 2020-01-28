@@ -12,7 +12,7 @@ RUN tar xzf /tmp/s6-overlay-amd64.tar.gz -C / --exclude="./bin" \
 
 #Install moodle requirements
 RUN yum -y install centos-release-scl \
- && yum -y install rh-nginx116 rh-php73 rh-php73-php-fpm rh-php73-php-xml rh-php73-php-pgsql rh-php73-php-mysqlnd rh-php73-php-curl rh-php73-php-zip rh-php73-php-gd rh-php73-php-mbstring rh-php73-php-xmlrpc rh-php73-php-soap rh-php73-php-intl rh-php73-php-opcache sclo-php73-php-pecl-memcached sclo-php73-php-pecl-redis5 rh-postgresql10-postgresql-syspaths rh-mysql80-mysql-syspaths git cronie \
+ && yum -y install rh-nginx116 rh-php73 rh-php73-php-fpm rh-php73-php-xml rh-php73-php-pgsql rh-php73-php-mysqlnd rh-php73-php-curl rh-php73-php-zip rh-php73-php-gd rh-php73-php-mbstring rh-php73-php-xmlrpc rh-php73-php-soap rh-php73-php-intl rh-php73-php-opcache sclo-php73-php-pecl-memcached sclo-php73-php-pecl-redis5 rh-postgresql10-postgresql-syspaths rh-mysql80-mysql-syspaths git cronie openssl \
  && sed -i 's/user = apache/user = nginx/' /etc/opt/rh/rh-php73/php-fpm.d/www.conf \
  && sed -i 's/group = apache/group = nginx/' /etc/opt/rh/rh-php73/php-fpm.d/www.conf
 
@@ -24,7 +24,9 @@ RUN rm -rfv /opt/rh/rh-nginx116/root/usr/share/nginx/html/* \
 
 #Configure webserver as per Moodle Docs
 RUN sed -i '/        location \/ {/ a \\t\tindex  index.php index.html index.htm;' /etc/opt/rh/rh-nginx116/nginx/nginx.conf \
- && sed -i '/pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000/ a\\tlocation ~ [^\/]\\.php(\/|\$) {\n\t\tfastcgi_split_path_info ^(.+\\.php)(\/.+)\$;\n\t\tfastcgi_index\tindex.php;\n\t\tfastcgi_pass\t127.0.0.1:9000;\n\t\tinclude\tfastcgi_params;\n\t\tfastcgi_param\tPATH_INFO\t\$fastcgi_path_info;\n\t\tfastcgi_param\tSCRIPT_FILENAME\t\$document_root\$fastcgi_script_name;\n\t}' /etc/opt/rh/rh-nginx116/nginx/nginx.conf
+ && sed -i '/pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000/ a\\tlocation ~ [^\/]\\.php(\/|\$) {\n\t\tfastcgi_split_path_info ^(.+\\.php)(\/.+)\$;\n\t\tfastcgi_index\tindex.php;\n\t\tfastcgi_pass\t127.0.0.1:9000;\n\t\tinclude\tfastcgi_params;\n\t\tfastcgi_param\tPATH_INFO\t\$fastcgi_path_info;\n\t\tfastcgi_param\tSCRIPT_FILENAME\t\$document_root\$fastcgi_script_name;\n\t}' /etc/opt/rh/rh-nginx116/nginx/nginx.conf \
+ && sed -i 's/listen       \[::]:80 default_server;/listen       443 ssl;/g' /etc/opt/rh/rh-nginx116/nginx/nginx.conf \
+ && sed -i "/\\\*root         \/opt\/rh\/rh-nginx116\/root\/usr\/share\/nginx\/html;\\\*/a\\\n        ssl_protocols        TLSv1.2 TLSv1.3;\\n        ssl_certificate      cert.pem;\\n        ssl_certificate_key  cert.key;\\n\\n        ssl_session_cache    none;\\n        ssl_session_timeout  5m;" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
 
 #Redirect nginx logs
 RUN ln -sf /dev/stdout /var/opt/rh/rh-nginx116/log/nginx/access.log \
