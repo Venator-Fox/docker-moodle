@@ -100,26 +100,29 @@ Ephemeral variables can be changed on existing installations via container rebui
 | Variable | Default Value | Description | Ephemeral |
 | ------ | ------ | ------ | ------ |
 | NGINX\_MAX\_BODY\_SIZE | 1M | Maximum allowed body size for NGINX | TRUE |
+| NGINX\_KEEPALIVE\_TIMEOUT | 65 | View the [NGINX docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#keepalive_timeout) for more information | TRUE |
+| NGINX\_SSL\_SESSION\_CACHE | none | This container is designed to have some SSL proxy/LB put in front of it on 80. Internal SSL can however still be tuned if snakeoil 443 is desired for whatever reason. [NGINX docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_cache) | TRUE |
+| NGINX\_SSL\_SESSION\_TIMEOUT | 5m | [NGINX docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_timeout) | TRUE |
 | PHPFPM\_UPLOAD\_MAX\_FILESIZE | 2M | Maximum allowed upload filesize for PHP-FPM | TRUE |
 | PHPFPM\_POST\_MAX\_SIZE | 8M | Maximum size of post data allowed for PHP-FPM | TRUE |
 | PHPFPM\_MAX\_EXECUTION\_TIME | 30 | Maximum execution time for php scripts | TRUE |
-| PHPFPM\_OPCACHE\_MEMORY\_CONSUMPTION | 128 | View the [Moodle OPcache](https://docs.moodle.org/38/en/OPcache) docs for more information. | TRUE |
-| PHPFPM\_OPCACHE\_MAX\_ACCELERATED\_FILES | 4000 | View the [Moodle OPcache](https://docs.moodle.org/38/en/OPcache) docs for more information. | TRUE |
+| PHPFPM\_OPCACHE\_MEMORY\_CONSUMPTION | 128 | View the [Moodle OPcache](https://docs.moodle.org/38/en/OPcache) docs for more information | TRUE |
+| PHPFPM\_OPCACHE\_MAX\_ACCELERATED\_FILES | 4000 | View the [Moodle OPcache](https://docs.moodle.org/38/en/OPcache) docs for more information | TRUE |
 | CRON\_MOODLE\_INTERVAL | 15 | Interval for Moodle Cron in Minutes | TRUE |
 | MOODLECFG_SSLPROXY | false | Set to true if an SSL proxy container is put infront of the Moodle install, such as HAProxy with SSL termination; An example will be presented in the below docker compose files | TRUE |
 | MOODLECFG_REVERSEPROXY | false | Set to true if the container is accessed via different base URL, This will prevent redirection loop if the container behind a proxy which strips the url | TRUE |
-| MOODLECFG\_SESSION\_HANDLER\_CLASS | file | Change the session handler. Valid values are `file`, `memcached`, or `redis`. View the [Moodle Session handling](https://docs.moodle.org/38/en/Session_handling) docs for more information. | TRUE |
-| MOODLECFG\_SESSION\_MEMCACHED\_SAVE\_PATH | some-memcached:11211 | Ignored if session handling is not `memcached`. | TRUE |
-| MOODLECFG\_SESSION\_MEMCACHED\_PREFIX | memc.sess.key | Ignored if session handling is not `memcached`. | TRUE |
-| MOODLECFG\_SESSION\_MEMCACHED\_ACQUIRE\_LOCK\_TIMEOUT | 120 | Ignored if session handling is not `memcached`. | TRUE |
-| MOODLECFG\_SESSION\_REDIS\_HOST | some-redis | Ignored if session handling is not `redis`. | TRUE |
-| MOODLECFG\_SESSION\_REDIS\_PORT | 6379 | Ignored if session handling is not `redis`. | TRUE |
-| MOODLECFG\_SESSION\_REDIS\_DATABASE | 0 | Ignored if session handling is not `redis`. | TRUE |
-| MOODLECFG\_SESSION\_REDIS\_PREFIX |  | Ignored if session handling is not `redis`. | TRUE |
-| MOODLECFG\_SESSION\_REDIS\_ACQUIRE\_LOCK\_TIMEOUT | 120 | Ignored if session handling is not `redis`. | TRUE |
-| MOODLECFG\_SESSION\_REDIS\_LOCK\_EXPIRE | 7200 | Ignored if session handling is not `redis`. | TRUE |
+| MOODLECFG\_SESSION\_HANDLER\_CLASS | file | Change the session handler. Valid values are `file`, `memcached`, or `redis`. View the [Moodle Session handling](https://docs.moodle.org/38/en/Session_handling) docs for more information | TRUE |
+| MOODLECFG\_SESSION\_MEMCACHED\_SAVE\_PATH | some-memcached:11211 | Ignored if session handling is not `memcached` | TRUE |
+| MOODLECFG\_SESSION\_MEMCACHED\_PREFIX | memc.sess.key | Ignored if session handling is not `memcached` | TRUE |
+| MOODLECFG\_SESSION\_MEMCACHED\_ACQUIRE\_LOCK\_TIMEOUT | 120 | Ignored if session handling is not `memcached` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_HOST | some-redis | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_PORT | 6379 | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_DATABASE | 0 | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_PREFIX |  | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_ACQUIRE\_LOCK\_TIMEOUT | 120 | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_LOCK\_EXPIRE | 7200 | Ignored if session handling is not `redis` | TRUE |
 | MOODLE_LANG | en | ------ | FALSE |
-| MOODLE_WWWROOT | http://localhost | Be sure to update to https:// if an SSL proxy is used | TRUE |
+| MOODLE_WWWROOT | http://localhost | Use `https://` any type of SSL solution | TRUE |
 | MOODLE_DBTYPE | pgsql | Change to `mysqli` if using MySQL | FALSE |
 | MOODLE_DBHOST | moodle-postgres | Change to something like `moodle-mysql` if using MySQL | FALSE |
 | MOODLE_DBNAME | moodle | ------ | TRUE |

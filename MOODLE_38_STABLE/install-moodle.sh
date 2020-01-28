@@ -2,6 +2,9 @@
 
 #Default runtime variables if none is supplied
 NGINX_MAX_BODY_SIZE=${NGINX_MAX_BODY_SIZE:='1M'}
+NGINX_KEEPALIVE_TIMEOUT=${NGINX_KEEPALIVE_TIMEOUT:='65'}
+NGINX_SSL_SESSION_CACHE=${NGINX_SSL_SESSION_CACHE:='none'}
+NGINX_SSL_SESSION_TIMEOUT=${NGINX_SSL_SESSION_TIMEOUT:='5m'}
 
 PHPFPM_UPLOAD_MAX_FILESIZE=${PHPFPM_UPLOAD_MAX_FILESIZE:='2M'}
 PHPFPM_POST_MAX_SIZE=${PHPFPM_POST_MAX_SIZE:='8M'}
@@ -113,6 +116,9 @@ fi
 #Set ephemeral configs
 echo "[$(basename $0)] Setting ephemeral values in config.php..."
 sed -i "/types_hash_max_size 2048;/a \    client_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
+sed -i "s/keepalive_timeout  65;/keepalive_timeout  $NGINX_KEEPALIVE_TIMEOUT;/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
+sed -i "s/ssl_session_cache    none;/ssl_session_cache    $NGINX_SSL_SESSION_CACHE;/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
+sed -i "s/ssl_session_timeout  5m;/ssl_session_timeout  $NGINX_SSL_SESSION_TIMEOUT;/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
 sed -i "s/upload_max_filesize = 2M/upload_max_filesize = $PHPFPM_UPLOAD_MAX_FILESIZE/g" /etc/opt/rh/rh-php73/php.ini
 sed -i "s/post_max_size = 8M/post_max_size = $PHPFPM_POST_MAX_SIZE/g" /etc/opt/rh/rh-php73/php.ini
 sed -i "s/max_execution_time = 30/max_execution_time = $PHPFPM_MAX_EXECUTION_TIME/g" /etc/opt/rh/rh-php73/php.ini
@@ -203,9 +209,14 @@ fi
 #Setup CRON
 echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx116/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
 
-#Remove git
+#Snakeoil
+echo "[$(basename $0)] Generating keys..."
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout /etc/opt/rh/rh-nginx116/nginx/cert.key -out /etc/opt/rh/rh-nginx116/nginx/cert.pem -subj "/CN=$(hostname)" &> /dev/null
+echo "[$(basename $0)] Done generating keys."
+
+#Remove git, openssl
 echo "[$(basename $0)] Removing unneeded script packages..."
-yum remove -y fipscheck groff-base libedit openssh rsync > /dev/null
+yum remove -y fipscheck groff-base libedit openssh rsync make > /dev/null
 echo "[$(basename $0)] Finished removing packages."
 
 #Self Destruct
