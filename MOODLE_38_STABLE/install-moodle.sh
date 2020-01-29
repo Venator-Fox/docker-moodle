@@ -46,9 +46,7 @@ MOODLE_ADMINPASS=${MOODLE_ADMINPASS:='password'}
 MOODLE_ADMINEMAIL=${MOODLE_ADMINEMAIL:='support@example.com'}
 
 INSTALL_PLUGIN_URLS=${INSTALL_PLUGIN_URLS:=}
-
 PLUGIN_DOWNLOAD_URL_ARRAY=($INSTALL_PLUGIN_URLS)
-MOODLE_WWW_ROOT=/opt/rh/rh-nginx116/root/usr/share/nginx/html/
 
 # Function to stop script execution and kill PID 1 to stop the container.
 # Params: Message, Exit Code
@@ -249,7 +247,8 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
         PLUGIN_TYPE_COMPONENT=$(echo $PLUGIN_BASENAME | awk -F '_' '{ print $1 }')
         PLUGIN_TYPE_PATH=${PLUGIN_TYPE_MAP["$PLUGIN_TYPE_COMPONENT"]}
 
-        PLUGIN_ARCHIVE_PATH=$MOODLE_WWW_ROOT$PLUGIN_TYPE_PATH$PLUGIN_BASENAME
+        PLUGIN_BASE_PATH=/opt/rh/rh-nginx116/root/usr/share/nginx/html/
+        PLUGIN_ARCHIVE_PATH=$PLUGIN_BASE_PATH$PLUGIN_TYPE_PATH$PLUGIN_BASENAME
 
         echo "[$(basename $0)] Processing plugin ($COUNTER/$ELEMENTS): $PLUGIN_BASENAME"
 
@@ -266,8 +265,8 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
         curl -sS "$i" -o $PLUGIN_ARCHIVE_PATH > /dev/null
         echo "[$(basename $0)] Wrote archive to: $PLUGIN_ARCHIVE_PATH"
 
-        echo "[$(basename $0)] Extracting $PLUGIN_BASENAME to $MOODLE_WWW_ROOT$PLUGIN_TYPE_PATH"
-        unzip -o $PLUGIN_ARCHIVE_PATH -d $MOODLE_WWW_ROOT$PLUGIN_TYPE_PATH > /dev/null
+        echo "[$(basename $0)] Extracting $PLUGIN_BASENAME to $PLUGIN_BASE_PATH$PLUGIN_TYPE_PATH"
+        unzip -o $PLUGIN_ARCHIVE_PATH -d $PLUGIN_BASE_PATH$PLUGIN_TYPE_PATH > /dev/null
         if [ "$?" -gt "0" ]; then
             something_horrible "Error extracting archive." "20"
         fi
