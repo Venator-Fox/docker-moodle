@@ -57,4 +57,8 @@ RUN chmod u+x /etc/cont-init.d/install-moodle.sh
 
 RUN yum -y update && yum clean all && rm -rf /var/cache/yum && > /var/log/yum.log
 
+HEALTHCHECK --interval=30s --timeout=30s --start-period=600s --retries=3 CMD curl http://localhost:80/ || exit 1
+
+EXPOSE 80 443
+
 ENTRYPOINT ["/init"]
