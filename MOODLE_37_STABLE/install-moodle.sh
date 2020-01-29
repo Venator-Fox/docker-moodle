@@ -131,42 +131,39 @@ sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /op
 
 sed -i "/\\\*reverseproxy\\\*/a\\\\n\$CFG->session_handler_class = '\\\core\\\session\\\\$MOODLECFG_SESSION_HANDLER_CLASS';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 
-#Only set ephemeral memcached config if session handler is memcached
-if [ "$MOODLECFG_SESSION_HANDLER_CLASS" = "memcached" ]; then
-    echo "[$(basename $0)] Session handler type env var is memcached. Inserting memcached configs..."
-    sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_memcached_save_path = '$MOODLECFG_SESSION_MEMCACHED_SAVE_PATH';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*memcached_save_path\\\*/a\$CFG->session_memcached_prefix = '$MOODLECFG_SESSION_MEMCACHED_PREFIX';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*memcached_prefix\\\*/a\$CFG->session_memcached_acquire_lock_timeout = $MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    echo "[$(basename $0)] Completed memcached configuration."
+#Set ephemeral configs based on session handler
+case ${MOODLECFG_SESSION_HANDLER_CLASS,,} in
+    redis)
+        echo "[$(basename $0)] Session handler type env var is redis. Inserting redis configs..."
+        sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_redis_host = '$MOODLECFG_SESSION_REDIS_HOST';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*redis_host\\\*/a\$CFG->session_redis_port = $MOODLECFG_SESSION_REDIS_PORT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*redis_port\\\*/a\$CFG->session_redis_database = $MOODLECFG_SESSION_REDIS_DATABASE;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*redis_database\\\*/a\$CFG->session_redis_prefix = '$MOODLECFG_SESSION_REDIS_PREFIX';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*redis_prefix\\\*/a\$CFG->session_redis_acquire_lock_timeout = $MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*session_redis_acquire_lock_timeout\\\*/a\$CFG->session_redis_lock_expire = $MOODLECFG_SESSION_REDIS_LOCK_EXPIRE;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        echo "[$(basename $0)] Completed redis configuration."
 
-    echo "[$(basename $0)] Removing unneeded php extensions..."
-    yum remove -y sclo-php73-php-pecl-redis5 > /dev/null
-    echo "[$(basename $0)] Finished removing packages."
+        echo "[$(basename $0)] Removing unneeded php extensions..."
+        yum remove -y sclo-php73-php-pecl-memcached > /dev/null
+        echo "[$(basename $0)] Finished removing packages."
+        ;;
+    memcached)
+        echo "[$(basename $0)] Session handler type env var is memcached. Inserting memcached configs..."
+        sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_memcached_save_path = '$MOODLECFG_SESSION_MEMCACHED_SAVE_PATH';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*memcached_save_path\\\*/a\$CFG->session_memcached_prefix = '$MOODLECFG_SESSION_MEMCACHED_PREFIX';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*memcached_prefix\\\*/a\$CFG->session_memcached_acquire_lock_timeout = $MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        echo "[$(basename $0)] Completed memcached configuration."
 
-else
-    echo "[$(basename $0)] Session type env var is not memcached, skipping memcached configuration..."
-fi
-
-#Only set ephemeral redis config if session handler is redis
-if [ "$MOODLECFG_SESSION_HANDLER_CLASS" = "redis" ]; then
-    echo "[$(basename $0)] Session handler type env var is redis. Inserting redis configs..."
-    sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_redis_host = '$MOODLECFG_SESSION_REDIS_HOST';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*redis_host\\\*/a\$CFG->session_redis_port = $MOODLECFG_SESSION_REDIS_PORT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*redis_port\\\*/a\$CFG->session_redis_database = $MOODLECFG_SESSION_REDIS_DATABASE;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*redis_database\\\*/a\$CFG->session_redis_prefix = '$MOODLECFG_SESSION_REDIS_PREFIX';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*redis_prefix\\\*/a\$CFG->session_redis_acquire_lock_timeout = $MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    sed -i "/\\\*session_redis_acquire_lock_timeout\\\*/a\$CFG->session_redis_lock_expire = $MOODLECFG_SESSION_REDIS_LOCK_EXPIRE;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-    echo "[$(basename $0)] Completed redis configuration."
-
-    echo "[$(basename $0)] Removing unneeded php extensions..."
-    yum remove -y sclo-php73-php-pecl-memcached > /dev/null
-    echo "[$(basename $0)] Finished removing packages."
-
-else
-    echo "[$(basename $0)] Session type env var is not redis, skipping redis configuration..."
-fi
+        echo "[$(basename $0)] Removing unneeded php extensions..."
+        yum remove -y sclo-php73-php-pecl-redis5 > /dev/null
+        echo "[$(basename $0)] Finished removing packages."
+        ;;
+    *)
+        >&2 echo "[$(basename $0)] Invalid \$MOODLECFG_SESSION_HANDLER_CLASS $MOODLECFG_SESSION_HANDLER_CLASS Supported options are redis or memcached."
+        ;;
+esac
 
 echo "[$(basename $0)] Done setting ephemeral configs."
 
