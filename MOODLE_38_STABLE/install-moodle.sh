@@ -160,8 +160,14 @@ case ${MOODLECFG_SESSION_HANDLER_CLASS,,} in
         yum remove -y sclo-php73-php-pecl-redis5 > /dev/null
         echo "[$(basename $0)] Finished removing packages."
         ;;
+    file)
+        echo "[$(basename $0)] Session handler type env var is file."
+        echo "[$(basename $0)] Removing unneeded php extensions..."
+        yum remove -y sclo-php73-php-pecl-memcached sclo-php73-php-pecl-redis5 > /dev/null
+        echo "[$(basename $0)] Finished removing packages."
+        ;;
     *)
-        >&2 echo "[$(basename $0)] Invalid \$MOODLECFG_SESSION_HANDLER_CLASS $MOODLECFG_SESSION_HANDLER_CLASS Supported options are redis or memcached."
+        >&2 echo "[$(basename $0)] Invalid \$MOODLECFG_SESSION_HANDLER_CLASS $MOODLECFG_SESSION_HANDLER_CLASS Supported options are redis, memcached, or file."
         ;;
 esac
 
