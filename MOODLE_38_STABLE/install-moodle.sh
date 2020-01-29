@@ -50,6 +50,13 @@ INSTALL_PLUGIN_URLS=${INSTALL_PLUGIN_URLS:=}
 PLUGIN_DOWNLOAD_URL_ARRAY=($INSTALL_PLUGIN_URLS)
 MOODLE_WWW_ROOT=/opt/rh/rh-nginx116/root/usr/share/nginx/html/
 
+# Function to stop script execution and kill PID 1 to stop the container.
+# Params: Message, Exit Code
+function something_horrible () {
+    >&2 echo "[$(basename $0)] Something horrible has happened. $1 Submit an issue with logs if needed. I need to die now. Goodbye.";
+    kill -15 1; exit $2
+}
+
 case ${MOODLE_DBTYPE,,} in
     pgsql)  
         echo "[$(basename $0)] Database type is pgsql."
@@ -77,10 +84,6 @@ case ${MOODLE_DBTYPE,,} in
         ;;
 esac
 
-echo "[$(basename $0)] Removing database client packages..."
-yum remove -y rh-postgresql10-postgresql rh-postgresql10-postgresql-libs rh-postgresql10-runtime rh-mysql80-lz4 rh-mysql80-mysql rh-mysql80-mysql-common rh-mysql80-mysql-config rh-mysql80-runtime > /dev/null
-echo "[$(basename $0)] Finished removing packages."
-
 echo "[$(basename $0)] Starting Moodle CLI installer if database tables are empty..."
 
 #Moodle CLI to install Moodle with runtime variables
@@ -105,10 +108,15 @@ echo "[$(basename $0)] Starting Moodle CLI installer if database tables are empt
   --agree-license \
   --non-interactive
 
-echo "[$(basename $0)] Process complete."
+if [ ! -f /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php ]; then
+    something_horrible "Moodle config.php is missing, verify database credentials." "30"
+else
+    echo "[$(basename $0)] Process complete."
+fi
 
 #Set ephemeral configs
-echo "[$(basename $0)] Setting ephemeral values in config.php..."
+echo "[$(basename $0)] Setting ephemeral configs..."
+sed -i "s/server_name  _/server_name  ${MOODLE_WWWROOT##*/}/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
 sed -i "/types_hash_max_size 2048;/a \    client_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
 sed -i "s/keepalive_timeout  65;/keepalive_timeout  $NGINX_KEEPALIVE_TIMEOUT;/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
 sed -i "s/ssl_session_cache    none;/ssl_session_cache    $NGINX_SSL_SESSION_CACHE;/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
@@ -162,7 +170,7 @@ else
     echo "[$(basename $0)] Session type env var is not redis, skipping redis configuration..."
 fi
 
-echo "[$(basename $0)] Done setting values in config.php."
+echo "[$(basename $0)] Done setting ephemeral configs."
 
 #Snakeoil
 echo "[$(basename $0)] Generating keys..."
@@ -249,8 +257,7 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
         if [ -n "${PLUGIN_TYPE_MAP[$PLUGIN_TYPE_COMPONENT] + 1}" ]; then
             echo "[$(basename $0)] Plugin component name determined to be: $PLUGIN_TYPE_COMPONENT"
         else
-            >&2 echo "[$(basename $0)] Unable to determine plugin component name. Something horrible has happened, please double check the URL and previous errors if any. Submit an issue with logs if needed. I need to die now. Goodbye.";
-            kill -15 1; exit 10
+            something_horrible "Unable to determine plugin component name. Please double check the URL and previous errors if any." "10"
         fi
 
         echo "[$(basename $0)] Plugin archive path determined to be: $PLUGIN_ARCHIVE_PATH"
@@ -261,6 +268,9 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
 
         echo "[$(basename $0)] Extracting $PLUGIN_BASENAME to $MOODLE_WWW_ROOT$PLUGIN_TYPE_PATH"
         unzip -o $PLUGIN_ARCHIVE_PATH -d $MOODLE_WWW_ROOT$PLUGIN_TYPE_PATH > /dev/null
+        if [ "$?" -gt "0" ]; then
+            something_horrible "Error extracting archive." "20"
+        fi
 
         rm -f $PLUGIN_ARCHIVE_PATH
         echo "[$(basename $0)] Removed $PLUGIN_ARCHIVE_PATH"
@@ -274,9 +284,9 @@ fi
 #Setup CRON
 echo "*/$CRON_MOODLE_INTERVAL * * * * /usr/bin/php /opt/rh/rh-nginx116/root/usr/share/nginx/html/admin/cli/cron.php" > /etc/cron.d/moodle
 
-#Remove git, openssl, unzip
+#Remove git, openssl, unzip, database client packages
 echo "[$(basename $0)] Removing unneeded script packages..."
-yum remove -y fipscheck groff-base libedit openssh rsync make unzip > /dev/null
+yum remove -y rh-postgresql10-postgresql rh-postgresql10-postgresql-libs rh-postgresql10-runtime rh-mysql80-lz4 rh-mysql80-mysql rh-mysql80-mysql-common rh-mysql80-mysql-config rh-mysql80-runtime fipscheck groff-base libedit openssh rsync make unzip > /dev/null
 echo "[$(basename $0)] Finished removing packages."
 
 #Self Destruct
