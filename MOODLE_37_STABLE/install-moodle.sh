@@ -109,6 +109,7 @@ echo "[$(basename $0)] Process complete."
 
 #Set ephemeral configs
 echo "[$(basename $0)] Setting ephemeral values in config.php..."
+sed -i "s/server_name  _/server_name  ${MOODLE_WWWROOT##*/}/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
 sed -i "/types_hash_max_size 2048;/a \    client_max_body_size $NGINX_MAX_BODY_SIZE;" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
 sed -i "s/keepalive_timeout  65;/keepalive_timeout  $NGINX_KEEPALIVE_TIMEOUT;/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
 sed -i "s/ssl_session_cache    none;/ssl_session_cache    $NGINX_SSL_SESSION_CACHE;/g" /etc/opt/rh/rh-nginx116/nginx/nginx.conf
