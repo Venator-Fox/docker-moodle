@@ -46,7 +46,6 @@ MOODLE_ADMINPASS=${MOODLE_ADMINPASS:='password'}
 MOODLE_ADMINEMAIL=${MOODLE_ADMINEMAIL:='support@example.com'}
 
 INSTALL_PLUGIN_URLS=${INSTALL_PLUGIN_URLS:=}
-PLUGIN_DOWNLOAD_URL_ARRAY=($INSTALL_PLUGIN_URLS)
 
 # Function to stop script execution and kill PID 1 to stop the container.
 # Params: Message, Exit Code
@@ -183,6 +182,7 @@ chown nginx:nginx /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 echo "[$(basename $0)] Done setting ownership..."
 
 #Install plugins, if any
+PLUGIN_DOWNLOAD_URL_ARRAY=($INSTALL_PLUGIN_URLS)
 if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
 
     echo "[$(basename $0)] Plugins are to be installed..."
