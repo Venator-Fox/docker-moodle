@@ -14,23 +14,9 @@ PHPFPM_OPCACHE_MAX_ACCELERATED_FILES=${PHPFPM_OPCACHE_MAX_ACCELERATED_FILES:='40
 
 CRON_MOODLE_INTERVAL=${CRON_MOODLE_INTERVAL:='15'}
 
-MOODLECFG_SSLPROXY=${MOODLECFG_SSLPROXY:='false'}
-MOODLECFG_REVERSEPROXY=${MOODLECFG_REVERSEPROXY:='false'}
-MOODLECFG_SESSION_HANDLER_CLASS=${MOODLECFG_SESSION_HANDLER_CLASS:='file'}
-
-MOODLECFG_SESSION_MEMCACHED_SAVE_PATH=${MOODLECFG_SESSION_MEMCACHED_SAVE_PATH:='some-memcached:11211'}
-MOODLECFG_SESSION_MEMCACHED_PREFIX=${MOODLECFG_SESSION_MEMCACHED_PREFIX:='memc.sess.key'}
-MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT=${MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT:='120'}
-
-MOODLECFG_SESSION_REDIS_HOST=${MOODLECFG_SESSION_REDIS_HOST:='some-redis'}
-MOODLECFG_SESSION_REDIS_PORT=${MOODLECFG_SESSION_REDIS_PORT:='6379'}
-MOODLECFG_SESSION_REDIS_DATABASE=${MOODLECFG_SESSION_REDIS_DATABASE:='0'}
-MOODLECFG_SESSION_REDIS_PREFIX=${MOODLECFG_SESSION_REDIS_PREFIX:=''}
-MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT=${MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT:='120'}
-MOODLECFG_SESSION_REDIS_LOCK_EXPIRE=${MOODLECFG_SESSION_REDIS_LOCK_EXPIRE:='7200'}
-
 MOODLE_LANG=${MOODLE_LANG:='en'}
 MOODLE_WWWROOT=${MOODLE_WWWROOT:='http://localhost'}
+MOODLE_DATAROOT=${MOODLE_DATAROOT:='/var/moodledata'}
 MOODLE_DBTYPE=${MOODLE_DBTYPE:='pgsql'}
 MOODLE_DBHOST=${MOODLE_DBHOST:='moodle-postgres'}
 MOODLE_DBNAME=${MOODLE_DBNAME:='moodle'}
@@ -44,6 +30,22 @@ MOODLE_SUMMARY=${MOODLE_SUMMARY:='Some Moodle Summary'}
 MOODLE_ADMINUSER=${MOODLE_ADMINUSER:='admin'}
 MOODLE_ADMINPASS=${MOODLE_ADMINPASS:='password'}
 MOODLE_ADMINEMAIL=${MOODLE_ADMINEMAIL:='support@example.com'}
+
+MOODLECFG_SSLPROXY=${MOODLECFG_SSLPROXY:='false'}
+MOODLECFG_REVERSEPROXY=${MOODLECFG_REVERSEPROXY:='false'}
+MOODLECFG_TEMPDIR=${MOODLECFG_TEMPDIR:="$MOODLE_DATAROOT/temp"}
+MOODLECFG_CACHEDIR=${MOODLECFG_CACHEDIR:="$MOODLE_DATAROOT/cache"}
+MOODLECFG_LOCALCACHEDIR=${MOODLECFG_LOCALCACHEDIR:="$MOODLE_DATAROOT/localcache"}
+MOODLECFG_SESSION_HANDLER_CLASS=${MOODLECFG_SESSION_HANDLER_CLASS:='file'}
+MOODLECFG_SESSION_MEMCACHED_SAVE_PATH=${MOODLECFG_SESSION_MEMCACHED_SAVE_PATH:='some-memcached:11211'}
+MOODLECFG_SESSION_MEMCACHED_PREFIX=${MOODLECFG_SESSION_MEMCACHED_PREFIX:='memc.sess.key'}
+MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT=${MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT:='120'}
+MOODLECFG_SESSION_REDIS_HOST=${MOODLECFG_SESSION_REDIS_HOST:='some-redis'}
+MOODLECFG_SESSION_REDIS_PORT=${MOODLECFG_SESSION_REDIS_PORT:='6379'}
+MOODLECFG_SESSION_REDIS_DATABASE=${MOODLECFG_SESSION_REDIS_DATABASE:='0'}
+MOODLECFG_SESSION_REDIS_PREFIX=${MOODLECFG_SESSION_REDIS_PREFIX:=''}
+MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT=${MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT:='120'}
+MOODLECFG_SESSION_REDIS_LOCK_EXPIRE=${MOODLECFG_SESSION_REDIS_LOCK_EXPIRE:='7200'}
 
 INSTALL_PLUGIN_URLS=${INSTALL_PLUGIN_URLS:=}
 
@@ -88,7 +90,7 @@ echo "[$(basename $0)] Starting Moodle CLI installer if database tables are empt
   --chmod=2777 \
   --lang=$MOODLE_LANG \
   --wwwroot=$MOODLE_WWWROOT \
-  --dataroot=/var/moodledata \
+  --dataroot=$MOODLE_DATAROOT \
   --dbtype=$MOODLE_DBTYPE \
   --dbhost=$MOODLE_DBHOST \
   --dbname=$MOODLE_DBNAME \
@@ -126,9 +128,13 @@ sed -i "s/opcache.max_accelerated_files=4000/opcache.max_accelerated_files=$PHPF
 sed -i "/\\\*sslproxy\\\*/,+1 d" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 sed -i "/\\\*wwwroot\\\*/i \$CFG->sslproxy = $MOODLECFG_SSLPROXY;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 sed -i "/\\\*reverseproxy\\\*/,+1 d" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;\n" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+sed -i "/\\\*wwwroot\\\*/i \$CFG->reverseproxy = $MOODLECFG_REVERSEPROXY;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 
-sed -i "/\\\*reverseproxy\\\*/a\\\\n\$CFG->session_handler_class = '\\\core\\\session\\\\$MOODLECFG_SESSION_HANDLER_CLASS';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+sed -i "/\\\*reverseproxy\\\*/a \\\\n\$CFG->tempdir = '$MOODLECFG_TEMPDIR';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+sed -i "/\\\*tempdir\\\*/a \$CFG->cachedir = '$MOODLECFG_CACHEDIR';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+sed -i "/\\\*cachedir\\\*/a \$CFG->localcachedir = '$MOODLECFG_LOCALCACHEDIR';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+
+sed -i "/\\\*localcachedir\\\*/a \\\\n\$CFG->session_handler_class = '\\\core\\\session\\\\$MOODLECFG_SESSION_HANDLER_CLASS';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
 
 #Set ephemeral configs based on session handler
 case ${MOODLECFG_SESSION_HANDLER_CLASS,,} in
@@ -140,7 +146,7 @@ case ${MOODLECFG_SESSION_HANDLER_CLASS,,} in
         sed -i "/\\\*redis_port\\\*/a\$CFG->session_redis_database = $MOODLECFG_SESSION_REDIS_DATABASE;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
         sed -i "/\\\*redis_database\\\*/a\$CFG->session_redis_prefix = '$MOODLECFG_SESSION_REDIS_PREFIX';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
         sed -i "/\\\*redis_prefix\\\*/a\$CFG->session_redis_acquire_lock_timeout = $MOODLECFG_SESSION_REDIS_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-        sed -i "/\\\*session_redis_acquire_lock_timeout\\\*/a\$CFG->session_redis_lock_expire = $MOODLECFG_SESSION_REDIS_LOCK_EXPIRE;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*session_redis_acquire_lock_timeout\\\*/a\$CFG->session_redis_lock_expire = $MOODLECFG_SESSION_REDIS_LOCK_EXPIRE;\\n" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
         echo "[$(basename $0)] Completed redis configuration."
 
         echo "[$(basename $0)] Removing unneeded php extensions..."
@@ -152,7 +158,7 @@ case ${MOODLECFG_SESSION_HANDLER_CLASS,,} in
         sed -i "s/file/$MOODLECFG_SESSION_HANDLER_CLASS/g" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
         sed -i "/\\\*session_handler_class\\\*/a\$CFG->session_memcached_save_path = '$MOODLECFG_SESSION_MEMCACHED_SAVE_PATH';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
         sed -i "/\\\*memcached_save_path\\\*/a\$CFG->session_memcached_prefix = '$MOODLECFG_SESSION_MEMCACHED_PREFIX';" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
-        sed -i "/\\\*memcached_prefix\\\*/a\$CFG->session_memcached_acquire_lock_timeout = $MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT;" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
+        sed -i "/\\\*memcached_prefix\\\*/a\$CFG->session_memcached_acquire_lock_timeout = $MOODLECFG_SESSION_MEMCACHED_ACQUIRE_LOCK_TIMEOUT;\\n" /opt/rh/rh-nginx116/root/usr/share/nginx/html/config.php
         echo "[$(basename $0)] Completed memcached configuration."
 
         echo "[$(basename $0)] Removing unneeded php extensions..."
