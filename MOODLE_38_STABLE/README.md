@@ -2,7 +2,7 @@
 
 Supported tags and respective `Dockerfile` links
 > ~~Depreciated~~ builds are not recommended, as they are EOL.
-> ##### NOTICE: The container [overhaul to CentOS](https://github.com/Venator-Fox/docker-moodle/commit/07a7cd33202a2aff8b04b5647f2b5569ce2003a0) changes the location of `moodledata`. It is now located in `/var/moodledata`. Please update persistent mounts if upgrading. This is as of the `MOODLE_38_STABLE` build. Depreciated builds (3.4.1+ and below) use `/var/www/moodledata`.
+> ##### NOTICE: The container [overhaul to CentOS](https://github.com/Venator-Fox/docker-moodle/commit/07a7cd33202a2aff8b04b5647f2b5569ce2003a0) changes the location of `moodledata`. It is now located in `/var/moodledata`. Please update persistent mounts if upgrading. This is as of the `MOODLE_37_STABLE` build. Depreciated builds (3.4.1+ and below) use `/var/www/moodledata`.
 
 -   [`MOODLE_38_STABLE`, `latest` (*MOODLE\_38\_STABLE/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/MOODLE_38_STABLE/Dockerfile)
 -   [`MOODLE_37_STABLE` (*MOODLE\_37\_STABLE/Dockerfile*)](https://github.com/Venator-Fox/docker-moodle/blob/master/MOODLE_37_STABLE/Dockerfile)
@@ -100,14 +100,19 @@ Ephemeral variables can be changed on existing installations via container rebui
 | Variable | Default Value | Description | Ephemeral |
 | ------ | ------ | ------ | ------ |
 | NGINX\_MAX\_BODY\_SIZE | 1M | Maximum allowed body size for NGINX | TRUE |
+| NGINX\_KEEPALIVE\_TIMEOUT | 65 | View the [NGINX docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#keepalive_timeout) for more information | TRUE |
+| NGINX\_SSL\_SESSION\_CACHE | none | This container is designed to have some SSL proxy/LB put in front of it on 80. Internal SSL can however still be tuned if snakeoil 443 is desired for whatever reason. [NGINX docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_cache) | TRUE |
+| NGINX\_SSL\_SESSION\_TIMEOUT | 5m | [NGINX docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_timeout) | TRUE |
 | PHPFPM\_UPLOAD\_MAX\_FILESIZE | 2M | Maximum allowed upload filesize for PHP-FPM | TRUE |
 | PHPFPM\_POST\_MAX\_SIZE | 8M | Maximum size of post data allowed for PHP-FPM | TRUE |
 | PHPFPM\_MAX\_EXECUTION\_TIME | 30 | Maximum execution time for php scripts | TRUE |
+| PHPFPM\_OPCACHE\_MEMORY\_CONSUMPTION | 128 | View the [Moodle OPcache](https://docs.moodle.org/38/en/OPcache) docs for more information | TRUE |
+| PHPFPM\_OPCACHE\_MAX\_ACCELERATED\_FILES | 4000 | View the [Moodle OPcache](https://docs.moodle.org/38/en/OPcache) docs for more information | TRUE |
 | CRON\_MOODLE\_INTERVAL | 15 | Interval for Moodle Cron in Minutes | TRUE |
 | MOODLECFG_SSLPROXY | false | Set to true if an SSL proxy container is put infront of the Moodle install, such as HAProxy with SSL termination; An example will be presented in the below docker compose files | TRUE |
-| MOODLECFG_REVERSEPROXY | false | Set to true if the container is accessed via different base URL, This will prevent redirection loop if the container behind a proxy which strips the url | TRUE |
 | MOODLE_LANG | en | ------ | FALSE |
-| MOODLE_WWWROOT | http://localhost | Be sure to update to https:// if an SSL proxy is used | TRUE |
+| MOODLE_WWWROOT | http://localhost | Use `https://` any type of SSL solution | TRUE |
+| MOODLE_DATAROOT | /var/moodledata | This is internal, it should never change from the default value `/var/moodledata`. | TRUE |
 | MOODLE_DBTYPE | pgsql | Change to `mysqli` if using MySQL | FALSE |
 | MOODLE_DBHOST | moodle-postgres | Change to something like `moodle-mysql` if using MySQL | FALSE |
 | MOODLE_DBNAME | moodle | ------ | TRUE |
@@ -121,10 +126,26 @@ Ephemeral variables can be changed on existing installations via container rebui
 | MOODLE_ADMINUSER | admin | ------ | FALSE |
 | MOODLE_ADMINPASS | password | ------ | FALSE |
 | MOODLE_ADMINEMAIL | admin@example.com | ------ | FALSE |
+| MOODLECFG_TEMPDIR | \$MOODLE_DATAROOT/temp | Generally should not be changed from the default value. This must be common in a clustered deployment. View the [Moodle Server cluster](https://docs.moodle.org/38/en/Server_cluster#.24CFG-.3Etempdir) docs for more information | TRUE |
+| MOODLECFG_CACHEDIR | \$MOODLE_DATAROOT/cache | Generally should not be changed from the default value. This must be common in a clustered deployment. View the [Moodle Server cluster](https://docs.moodle.org/38/en/Server_cluster#.24CFG-.3Ecachedir) docs for more information | TRUE |
+| MOODLECFG_LOCALCACHEDIR | \$MOODLE_DATAROOT/localcache | Generally should not be changed from the default value. Does not need to be common in a clustered deployment. Point towards fast storage. View the [Moodle Server cluster](https://docs.moodle.org/38/en/Server_cluster#.24CFG-.3Elocalcachedir) docs for more information | TRUE |
+| MOODLECFG_REVERSEPROXY | false | Set to true if the container is accessed via different base URL, This will prevent redirection loop if the container behind a proxy which strips the url | TRUE |
+| MOODLECFG\_SESSION\_HANDLER\_CLASS | file | Change the session handler. Valid values are `file`, `memcached`, or `redis`. View the [Moodle Session handling](https://docs.moodle.org/38/en/Session_handling) docs for more information | TRUE |
+| MOODLECFG\_SESSION\_MEMCACHED\_SAVE\_PATH | some-memcached:11211 | Ignored if session handling is not `memcached` | TRUE |
+| MOODLECFG\_SESSION\_MEMCACHED\_PREFIX | memc.sess.key | Ignored if session handling is not `memcached` | TRUE |
+| MOODLECFG\_SESSION\_MEMCACHED\_ACQUIRE\_LOCK\_TIMEOUT | 120 | Ignored if session handling is not `memcached` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_HOST | some-redis | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_PORT | 6379 | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_DATABASE | 0 | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_PREFIX |  | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_ACQUIRE\_LOCK\_TIMEOUT | 120 | Ignored if session handling is not `redis` | TRUE |
+| MOODLECFG\_SESSION\_REDIS\_LOCK\_EXPIRE | 7200 | Ignored if session handling is not `redis` | TRUE |
 | INSTALL\_PLUGIN\_URLS | | Enter a list of plugin URLS, seperated by spaces. As URL's often change with new versions hosted by Moodle, it is recommended to download from Moodle and host internally to ensure they stay available. Do NOT change the `basename` of the URL or filename if doing this. | TRUE |
 
 ### More Complex Examples
 Some more complex (ie. with SSL termination, Plugins, etc...) setup examples are located in the README.md within the [examples directory](https://github.com/Venator-Fox/docker-moodle/tree/master/examples).
+
+> NOTE: Clustered deployments must have an existing install (database). If a new install, start with 1 replica, and then increase after the install. If you don't do this, multiple replicas will try to install Moodle simultaneously into the same database which will not result in a good time. Recommended to read the [Moodle Server cluster](https://docs.moodle.org/38/en/Server_cluster) docs before deploying this in any clustered/orchestrated solution such as K8's.
 
 ### Maintenance
 
