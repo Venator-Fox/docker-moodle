@@ -230,7 +230,6 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
     PLUGIN_TYPE_MAP["dataformat"]="dataformat/"
     PLUGIN_TYPE_MAP["profilefield"]="user/profile/field/"
     PLUGIN_TYPE_MAP["report"]="report/"
-    PLUGIN_TYPE_MAP["coursereport"]="course/report/"
     PLUGIN_TYPE_MAP["gradeexport"]="grade/export/"
     PLUGIN_TYPE_MAP["gradeimport"]="grade/import/"
     PLUGIN_TYPE_MAP["gradereport"]="grade/report/"
@@ -246,8 +245,6 @@ if [ ! ${#PLUGIN_DOWNLOAD_URL_ARRAY[@]} -eq 0 ]; then
     PLUGIN_TYPE_MAP["cachelock"]="cache/locks/"
     PLUGIN_TYPE_MAP["theme"]="theme/"
     PLUGIN_TYPE_MAP["local"]="local/"
-    PLUGIN_TYPE_MAP["assignment"]="mod/assignment/type/"
-    PLUGIN_TYPE_MAP["report"]="admin/report/"
 
     for i in ${PLUGIN_DOWNLOAD_URL_ARRAY[@]}; do
         (( COUNTER++ ))
